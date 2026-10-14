@@ -1,0 +1,32 @@
+# --- ESP-IDF: se regeneran solos al compilar ---
+test-driver-4500/build/
+test-driver-4500/managed_components/
+*.bin
+*.elf
+*.map
+
+# --- Copia del código para la entrega física (el original está en test-driver-4500/) ---
+ALIMETRIK-entrega/codigo/
+ALIMETRIK-entrega/Archivo.zip
+
+# --- Experimentos y versiones anteriores ---
+test-enum-usb/
+ALIMETRIK-completo/
+
+# --- Respaldo de fábrica de la placa (16 MB, firmware del fabricante) ---
+backups/
+
+# --- Node / Python ---
+node_modules/
+__pycache__/
+*.pyc
+
+# --- Sistema y herramientas locales ---
+.DS_Store
+.claude/
+*.tmp
+~$*
+
+# --- Salidas de los generadores (las copias oficiales están en ALIMETRIK-entrega/) ---
+presentacion/*.pptx
+presentacion/*.pdf

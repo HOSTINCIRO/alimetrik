@@ -1,0 +1,43 @@
+BASE DE DATOS DE ALIMETRIK
+==========================
+
+DONDE VIVE
+----------
+Dentro de la memoria flash de la placa, en una particion propia de 8 MB
+llamada "almacen", formateada con FAT y nivelado de desgaste. No hay
+servidor ni nube: los datos nunca salen del equipo.
+
+ARCHIVOS REALES
+---------------
+  /almacen/usuarios.dat   encargados del sistema (contrasenas cifradas)
+  /almacen/estudian.dat   alumnos y su autorizacion de datos biometricos
+  /almacen/huellas.dat    plantillas de minucias (3 muestras por dedo)
+  /almacen/registro.dat   bitacora de entregas del comedor
+
+FORMATO DE CADA ARCHIVO
+-----------------------
+  [ cantidad : 4 bytes ][ registro 1 ][ registro 2 ] ... [ registro N ]
+
+Todos los registros de un archivo miden lo mismo, asi que el registro
+numero N se localiza con una multiplicacion, sin recorrer el archivo.
+
+Al dar de alta, el sistema ANEXA solo el registro nuevo al final y
+actualiza el contador de la cabecera (dos escrituras pequenas). Reescribir
+el archivo completo tardaba 1,7 segundos y congelaba el equipo, porque
+mientras se escribe en la flash el procesador no puede leer su programa.
+
+CAPACIDAD
+---------
+  1.000 alumnos | 3.000 plantillas | 2.000 registros (rotan) | 16 usuarios
+
+COPIA DE SEGURIDAD
+------------------
+Con la placa conectada por USB:
+  esptool.py -p /dev/cu.usbserial-110 read_flash 0x310000 0x800000 respaldo.bin
+Para restaurar:
+  esptool.py -p /dev/cu.usbserial-110 write_flash 0x310000 respaldo.bin
+
+EQUIVALENTE EN SQL
+------------------
+El archivo esquema.sql documenta el mismo modelo en SQL estandar, con
+sus llaves foraneas, indices y las consultas de uso frecuente.

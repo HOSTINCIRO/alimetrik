@@ -1,0 +1,95 @@
+=====================================================================
+ CÓMO SUBIR EL PROYECTO ALIMETRIK A JIRA
+ (asistente de importación nuevo, interfaz en español)
+=====================================================================
+
+USAR EL ARCHIVO:  alimetrik-jira-v2.csv
+----------------------------------------
+Está hecho a la medida del asistente nuevo de Jira:
+ * Encabezados en ESPAÑOL -> Jira los asocia automáticamente.
+ * Columna "ID de la actividad" (1 a 48) y "Elemento principal":
+   así el asistente cuelga cada tarea de su épica (jerarquía).
+ * 7 épicas + 41 actividades (historias, tareas y errores),
+   con estado, etiquetas y puntos de historia.
+
+(El archivo anterior, alimetrik-jira-importar.csv, era para el
+importador clásico con encabezados en inglés; por eso el asistente
+no encontraba el "Resumen". Ya no lo uses.)
+
+PASOS EN EL ASISTENTE
+---------------------
+1. En Jira: crear espacio/proyecto o, si ya estás en el asistente
+   de importación, ir a "Subir CSV".
+2. Subir  alimetrik-jira-v2.csv
+3. Pantalla "Asociar campos": verificar que quede así
+      ID de la actividad   -> ID de la actividad
+      Tipo de actividad    -> Tipo de actividad
+      Resumen              -> Resumen          (obligatorio)
+      Descripción          -> Descripción
+      Elemento principal   -> Elemento principal
+      Estado               -> Estado
+      Etiquetas            -> Etiquetas
+      Puntos de historia   -> Puntos de historia
+   Con los encabezados en español casi todo se asocia solo.
+   El interruptor "Mostrar solo los campos con errores" ayuda a
+   encontrar cualquier campo que falte.
+4. Pantalla "Asociar valores": confirmar los tipos
+      Épica -> Épica · Historia -> Historia · Tarea -> Tarea ·
+      Error -> Error
+   y los estados:  Listo -> Listo · Por hacer -> Por hacer
+   (si el proyecto no tiene alguno, elegir el equivalente).
+5. "Mover usuarios": no aplica (no hay columna de personas) ->
+   continuar.
+6. "Revisar detalles" -> Importar.
+
+RESULTADO ESPERADO
+------------------
+ 7 épicas:
+   1 Hardware y lector de huellas   5 Seguridad y protección de datos
+   2 Reconocimiento biométrico      6 Operación del comedor
+   3 Base de datos persistente      7 Documentación y entrega
+   4 Red propia y portal web
+ 41 actividades colgadas de sus épicas · 38 en "Listo" ·
+ 3 en "Por hacer" (mejoras futuras) · 188 puntos de historia.
+
+DESPUÉS DE IMPORTAR
+-------------------
+ * Adjuntar los entregables a sus tareas (abrir la tarea -> adjuntar):
+   manuales, modelo E-R, capturas de phpMyAdmin, presentación.
+ * (Opcional) Enlazar el código: subir la carpeta codigo/ a GitHub o
+   Bitbucket y conectar la integración en Jira -> Aplicaciones.
+   En los commits, empezar el mensaje con la clave de la tarea
+   (p. ej. "ALI-12 corregir anti-duplicado") para que Jira los muestre.
+
+NOTA: Jira gestiona el TRABAJO del proyecto; el código fuente vive
+en un repositorio (GitHub/Bitbucket) que se enlaza a Jira.
+=====================================================================
+
+=====================================================================
+ SI SALE "TIPO DE ACTIVIDAD NO VÁLIDO" (sección Tipos de actividad)
+=====================================================================
+Según la documentación de Atlassian, ese error significa que el tipo
+elegido en el desplegable está en un NIVEL de jerarquía que no
+corresponde con lo que dicen las columnas ID/Elemento principal:
+  nivel 1 (padre)  = Épica
+  nivel 0          = Historia, Tarea, Error
+  nivel -1 (hija)  = Subtarea   <- NO usarla: nuestro CSV no trae subtareas
+
+Corrección: abrir el desplegable de CADA fila y elegir de la lista
+(no fiarse de la sugerencia automática):
+  Épica    -> Épica      (tiene que ser el tipo de nivel épica)
+  Historia -> Historia   (si no existe, Tarea)
+  Tarea    -> Tarea
+  Error    -> Error      (si no existe, Tarea)
+Ninguna fila puede quedar sin asociar (lo no asociado cae a "Tarea"
+y rompe la jerarquía). Nada debe asociarse a "Subtarea".
+
+Si el desplegable de Épica NO ofrece ningún tipo de nivel épica:
+el espacio elegido no admite épicas -> volver a "Configurar espacio"
+y crear un espacio de SOFTWARE (plantilla Scrum o Kanban).
+
+Plan B: arriba de la pantalla de importación suele haber un enlace
+para "cambiar a la experiencia anterior" (importador clásico).
+Ahí sirve el archivo  alimetrik-jira-importar.csv  (el primero, en
+inglés, con Epic Name), que fue hecho para ese importador.
+=====================================================================

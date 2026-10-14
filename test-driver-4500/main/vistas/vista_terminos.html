@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ALIMETRIK · Tratamiento de datos biométricos</title>
+<style>
+  :root{--bg:#17181a;--card:#222427;--card2:#2b2e32;--line:#3a3e43;--txt:#eceef0;
+        --muted:#9aa1a8;--pri:#b9c0c7;--dup:#f6c453}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);line-height:1.65;
+       font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  header{background:linear-gradient(135deg,#a6adb5,#9aa3ab);padding:22px 18px;color:#1b1d1f}
+  header h1{margin:0;font-size:21px}
+  header p{margin:6px 0 0;font-size:13px;opacity:.9}
+  .wrap{max-width:820px;margin:0 auto;padding:22px 18px 60px}
+  h2{color:var(--pri);font-size:16px;margin:28px 0 10px;text-transform:uppercase;letter-spacing:.6px}
+  p,li{font-size:14.5px;color:#d5dee6}
+  ul{padding-left:20px} li{margin-bottom:7px}
+  .caja{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:16px 0}
+  .clave{background:rgba(185,192,199,.09);border:1px solid var(--pri)}
+  .ojo{background:rgba(246,196,83,.09);border:1px solid var(--dup)}
+  .caja b{color:var(--txt)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line)}
+  th{background:var(--card2);color:var(--muted);text-transform:uppercase;font-size:11.5px;letter-spacing:.4px}
+  .pie{color:var(--muted);font-size:12px;margin-top:34px;border-top:1px solid var(--line);padding-top:16px}
+  a{color:var(--pri)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Política de Tratamiento de Datos Biométricos</h1>
+  <p>Sistema ALIMETRIK · Control de entrega de raciones del comedor escolar</p>
+</header>
+<div class="wrap">
+
+<div class="caja clave">
+  <b>En pocas palabras:</b> usamos la huella dactilar únicamente para verificar que cada
+  estudiante reciba su ración una sola vez por servicio. <b>No guardamos la imagen de la
+  huella</b>, solo un conjunto de coordenadas del que no se puede reconstruir el dedo.
+  Los datos <b>nunca salen del dispositivo</b>: no hay internet ni nube. Autorizar es
+  <b>voluntario</b> y usted puede retirar su autorización cuando quiera.
+</div>
+
+<h2>1. Marco legal</h2>
+<p>Esta política se rige por la <b>Ley Estatutaria 1581 de 2012</b> (protección de datos
+personales), el <b>Decreto 1377 de 2013</b> que la reglamenta, y las decisiones de la
+<b>Superintendencia de Industria y Comercio (SIC)</b> como autoridad de control.</p>
+<p>La huella dactilar es un <b>dato personal sensible</b> (Ley 1581, art. 5). Su tratamiento
+está prohibido salvo que el titular otorgue <b>autorización previa, expresa e informada</b>
+(art. 6).</p>
+
+<h2>2. Responsable del tratamiento</h2>
+<table>
+  <tr><th>Responsable</th><td>La institución educativa que opera el comedor escolar</td></tr>
+  <tr><th>Finalidad</th><td>Verificar la identidad del estudiante para la entrega de raciones</td></tr>
+  <tr><th>Canal de contacto</th><td>Rectoría / coordinación del comedor de la institución</td></tr>
+</table>
+<p class="ojo caja">La institución debe completar aquí sus datos de contacto oficiales
+(dirección, correo y teléfono) antes de poner el sistema en operación.</p>
+
+<h2>3. Datos que se recolectan</h2>
+<ul>
+  <li><b>Identificación:</b> nombres, apellidos, documento y grado del estudiante.</li>
+  <li><b>Plantilla biométrica:</b> coordenadas (x, y) y ángulo de entre 20 y 50 puntos
+      característicos de la huella (minucias). <b>No es una imagen</b> y el proceso
+      <b>no es reversible</b>: con esos números no se puede reconstruir la huella.</li>
+  <li><b>Registros de entrega:</b> fecha, hora, servicio y resultado de cada verificación.</li>
+  <li><b>Autorización:</b> nombre y documento de quien autoriza, y fecha de la autorización.</li>
+</ul>
+
+<h2>4. Finalidad del tratamiento</h2>
+<p>Los datos se usan <b>exclusivamente</b> para:</p>
+<ul>
+  <li>Confirmar que quien reclama la ración es el beneficiario registrado.</li>
+  <li>Evitar la entrega duplicada del mismo servicio en un mismo día.</li>
+  <li>Generar estadísticas de cobertura del programa de alimentación.</li>
+</ul>
+<p>Los datos <b>no</b> se usan para control de asistencia académica, disciplina, publicidad,
+elaboración de perfiles ni ninguna otra finalidad distinta de la aquí señalada.</p>
+
+<h2>5. Carácter facultativo</h2>
+<div class="caja ojo">
+  <b>Autorizar el uso de la huella es voluntario.</b> Al tratarse de un dato sensible, nadie
+  está obligado a entregarlo (Ley 1581, art. 6). Si el estudiante o su representante legal
+  no autoriza, la institución debe ofrecer un <b>método alternativo</b> (por ejemplo, lista
+  o carné) sin que ello afecte su derecho a recibir la alimentación escolar.
+</div>
+
+<h2>6. Menores de edad</h2>
+<p>Cuando el titular es menor de edad, la autorización debe otorgarla su <b>padre, madre o
+representante legal</b>. El tratamiento debe respetar el <b>interés superior del menor</b> y
+sus derechos fundamentales (Decreto 1377 de 2013, art. 12). El sistema registra el nombre y
+documento de quien autoriza, junto con la fecha.</p>
+
+<h2>7. Seguridad y conservación</h2>
+<ul>
+  <li>La información se almacena <b>únicamente en la memoria del dispositivo</b> instalado en
+      la institución. No se transmite a internet, servidores externos ni servicios en la nube.</li>
+  <li>El acceso a la administración exige <b>usuario y contraseña</b>; las contraseñas se
+      guardan cifradas mediante resumen criptográfico (SHA-256 con sal), no en texto legible.</li>
+  <li>La red del equipo es local y su alcance se limita al área del comedor.</li>
+  <li>Los datos se conservan mientras el estudiante pertenezca al programa. Al retirarse, o
+      ante una solicitud de supresión, se eliminan del dispositivo.</li>
+</ul>
+
+<h2>8. Derechos del titular</h2>
+<p>Conforme al artículo 8 de la Ley 1581 de 2012, el titular (o su representante legal) puede
+en cualquier momento:</p>
+<ul>
+  <li><b>Conocer</b> qué datos suyos están registrados y cómo se usan.</li>
+  <li><b>Actualizar y rectificar</b> los datos inexactos o incompletos.</li>
+  <li><b>Solicitar prueba</b> de la autorización otorgada.</li>
+  <li><b>Revocar la autorización</b> y/o <b>solicitar la supresión</b> de sus datos
+      biométricos. El sistema cuenta con esa función y la eliminación es definitiva.</li>
+  <li><b>Presentar quejas</b> ante la Superintendencia de Industria y Comercio.</li>
+</ul>
+<p>Las solicitudes se radican ante la coordinación del comedor o la rectoría, que debe
+atenderlas en los plazos de ley (consultas: 10 días hábiles; reclamos: 15 días hábiles).</p>
+
+<h2>9. Autorización</h2>
+<p>Al marcar la casilla de aceptación en el formulario de registro, el representante legal
+declara que <b>leyó y entendió</b> esta política y <b>autoriza de forma libre, previa,
+expresa e informada</b> el tratamiento de la plantilla biométrica del estudiante para la
+finalidad descrita en el numeral 4.</p>
+
+<div class="pie">
+  Documento incorporado en el firmware del sistema ALIMETRIK. La institución educativa,
+  como responsable del tratamiento, debe adoptarlo formalmente, completar sus datos de
+  contacto y conservar la constancia de las autorizaciones otorgadas.
+</div>
+</div>
+</body>
+</html>

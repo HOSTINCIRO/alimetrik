@@ -1,0 +1,85 @@
+﻿Issue Type,Summary,Description,Epic Name,Parent,Status,Labels,Story Points
+Epic,Hardware y lector de huellas,Poner en marcha la placa ESP32-P4 y comunicarla con el lector DigitalPersona U.are.U 4500 por USB.,Hardware y lector de huellas,,Done,alimetrik,
+Epic,Reconocimiento biométrico,Extraer las minucias de la huella y compararlas para identificar a la persona dentro del propio equipo.,Reconocimiento biométrico,,Done,alimetrik,
+Epic,Base de datos persistente,"Almacenar alumnos, plantillas biométricas, registros y usuarios en la memoria del equipo, con datos que sobrevivan apagones.",Base de datos persistente,,Done,alimetrik,
+Epic,Red propia y portal web,Crear la red WiFi del equipo y publicar la interfaz de administración y el kiosco del comedor.,Red propia y portal web,,Done,alimetrik,
+Epic,Seguridad y protección de datos,Control de acceso de los encargados y cumplimiento de la Ley 1581 de 2012 sobre datos biométricos.,Seguridad y protección de datos,,Done,alimetrik,
+Epic,Operación del comedor,"Reglas del negocio: servicios por horario, anti-duplicado, métricas y registro de entregas.",Operación del comedor,,Done,alimetrik,
+Epic,Documentación y entrega,"Manuales, modelo de datos, presentación y material de sustentación.",Documentación y entrega,,Done,alimetrik,
+Story,Comunicar la placa con el lector de huellas por USB,"Como sistema, necesito detectar el lector U.are.U 4500 conectado al puerto USB y encenderlo, para poder capturar huellas.
+
+Criterios de aceptación:
+* El equipo detecta el lector al conectarlo
+* Se completa la secuencia de encendido del sensor
+* Si el lector se desconecta, la interfaz lo advierte",,Hardware y lector de huellas,Done,"alimetrik,hardware,usb",5
+Task,Documentar el protocolo USB del lector 4500,"Registrar los comandos, registros y eventos del lector en el documento PROTOCOLO-4500.md, ya que el fabricante no publica documentación para microcontroladores.",,Hardware y lector de huellas,Done,"alimetrik,documentacion",3
+Story,Capturar y descifrar la imagen de la huella,"La imagen llega cifrada desde el lector. Debe leerse completa y descifrarse para obtener una imagen utilizable.
+
+Criterios:
+* Imagen de 384x290 leída sin pérdida de bytes
+* Descifrado correcto verificado por contraste",,Hardware y lector de huellas,Done,"alimetrik,hardware",5
+Bug,El lector queda inutilizable tras un tiempo de espera agotado,"Si nadie pone el dedo durante 60 segundos, la transferencia USB pendiente deja el canal bloqueado y todas las capturas siguientes fallan hasta reiniciar.
+
+Solución: limpiar el canal USB tras cada timeout y añadir una escalera de recuperación.",,Hardware y lector de huellas,Done,"alimetrik,bug,critico",3
+Task,Recuperación automática ante fallos del lector,"Si dos capturas seguidas fallan, reiniciar el protocolo del lector; si la recuperación falla dos veces, reiniciar el equipo conservando los datos.",,Hardware y lector de huellas,Done,"alimetrik,robustez",3
+Story,Extraer las minucias de la huella dentro del equipo,"Integrar el algoritmo MINDTCT del NIST en el microcontrolador para obtener los puntos característicos de cada huella.
+
+Criterios:
+* Entre 20 y 60 minucias por captura
+* Tiempo de extracción menor a 5 segundos",,Reconocimiento biométrico,Done,"alimetrik,biometria",8
+Story,Comparador de huellas propio,"El comparador oficial del NIST no funciona correctamente en arquitectura de 32 bits. Desarrollar un comparador propio basado en alineación geométrica y conteo de correspondencias.
+
+Criterios:
+* Mismo dedo por encima del umbral, dedos distintos por debajo
+* Comparación en menos de 50 ms",,Reconocimiento biométrico,Done,"alimetrik,biometria,algoritmo",13
+Task,Optimizar la comparación con rejilla espacial,"Reducir el tiempo de comparación de 4,8 segundos a 30 milisegundos mediante una rejilla espacial que evita comparar todos los puntos contra todos.",,Reconocimiento biométrico,Done,"alimetrik,rendimiento",5
+Bug,El control de calidad rechaza las capturas correctas,"El medidor de calidad interpretaba el contraste de las crestas como ruido: cuanto mejor se apoyaba el dedo, más se rechazaba la captura (100% de rechazos).
+
+Solución: sustituir ese criterio por el porcentaje de sensor cubierto por el dedo.",,Reconocimiento biométrico,Done,"alimetrik,bug,critico",5
+Story,Enrolamiento con tres muestras por dedo,Con una sola muestra el puntaje quedaba al límite del umbral. Tomar tres muestras del mismo dedo y comparar contra todas.,,Reconocimiento biométrico,Done,"alimetrik,biometria",5
+Story,Almacenamiento persistente en la memoria del equipo,"Guardar alumnos, plantillas, registros y usuarios en la memoria flash, de modo que los datos sobrevivan a cortes de energía.",,Base de datos persistente,Done,"alimetrik,datos",8
+Task,Diseñar el modelo de datos y su equivalente relacional,Definir las cinco tablas del sistema y documentar el modelo entidad-relación y su equivalente en SQL para efectos académicos y de una eventual migración a servidor.,,Base de datos persistente,Done,"alimetrik,datos,documentacion",3
+Bug,Guardar reescribía toda la tabla y congelaba el equipo,"Cada alta reescribía la tabla completa (1,7 s con el firmware detenido). Solución: anexar únicamente el registro nuevo.",,Base de datos persistente,Done,"alimetrik,bug,rendimiento",3
+Bug,Una escritura fallida podía borrar toda una tabla,El archivo se vaciaba antes de escribir: si la escritura fallaba a la mitad se perdían todos los datos. Solución: escritura atómica con archivo temporal.,,Base de datos persistente,Done,"alimetrik,bug,critico",3
+Bug,Los identificadores se reutilizaban tras borrar y reiniciar,"Al borrar al último alumno y reiniciar, su identificador se asignaba a otro y los registros históricos quedaban atribuidos a la persona equivocada.",,Base de datos persistente,Done,"alimetrik,bug,critico",2
+Task,Migración automática del formato anterior,Al añadir los campos de autorización cambió la estructura: convertir automáticamente los datos existentes al arrancar.,,Base de datos persistente,Done,"alimetrik,datos",3
+Story,Red WiFi propia del equipo,El equipo crea su propia red inalámbrica para que cualquier celular pueda administrarlo sin internet ni aplicaciones.,,Red propia y portal web,Done,"alimetrik,red",5
+Task,Portal cautivo,"Servidor DNS que redirige cualquier consulta a la página del sistema, para que el navegador la abra automáticamente al conectarse.",,Red propia y portal web,Done,"alimetrik,red",3
+Story,Interfaz web del sistema,"Página única con las secciones Comedor, Métricas, Alumnos, Registros, Nuevo y Configuración, servida desde la memoria del propio equipo.",,Red propia y portal web,Done,"alimetrik,frontend",8
+Story,Kiosco de entrega del comedor,Pantalla de operación diaria: tarjeta grande con el resultado de cada huella y señal sonora distinta para autorizado y rechazado.,,Red propia y portal web,Done,"alimetrik,frontend",5
+Bug,Cada petición web tardaba 250 ms de más,Retardo de Nagle combinado con confirmación diferida de TCP. Solución: activar TCP_NODELAY. Resultado: de 250 ms a 4-12 ms.,,Red propia y portal web,Done,"alimetrik,bug,rendimiento",2
+Bug,La interfaz no confirmaba las acciones del usuario,El aviso de huella leída duraba menos que el ciclo de actualización de la página: nunca se veía y el usuario creía que el sistema no respondía.,,Red propia y portal web,Done,"alimetrik,bug,usabilidad",3
+Story,Inicio de sesión para los encargados,"Como institución, necesito que solo el personal autorizado acceda al sistema, porque maneja datos personales sensibles.
+
+Criterios:
+* Usuario y contraseña con contraseñas cifradas (SHA-256 con sal)
+* Roles de administrador y operador
+* La sesión caduca por inactividad",,Seguridad y protección de datos,Done,"alimetrik,seguridad",8
+Story,Consentimiento informado para datos biométricos,"Conforme a la Ley 1581 de 2012, la huella es un dato sensible: exigir autorización previa, expresa e informada del titular o su representante legal antes de registrar a un alumno.
+
+Criterios:
+* No se puede registrar un alumno sin marcar la autorización
+* Se guarda quién autoriza, su documento y la fecha
+* No se puede enrolar la huella sin autorización vigente",,Seguridad y protección de datos,Done,"alimetrik,seguridad,legal",8
+Task,Política de tratamiento de datos publicada en el sistema,"Documento consultable desde la propia interfaz, con finalidad, carácter facultativo, derechos del titular y tratamiento de datos de menores de edad.",,Seguridad y protección de datos,Done,"alimetrik,legal,documentacion",3
+Story,Derecho de revocación y supresión,Permitir revocar la autorización en cualquier momento: se eliminan de inmediato las plantillas biométricas de la persona.,,Seguridad y protección de datos,Done,"alimetrik,seguridad,legal",5
+Bug,Un usuario borrado seguía operando con su sesión abierta,Al eliminar un usuario no se cerraban sus sesiones activas. Solución: revocar todas sus sesiones al borrarlo.,,Seguridad y protección de datos,Done,"alimetrik,bug,seguridad",2
+Task,Proteger la red WiFi con contraseña,Actualmente la red del equipo es abierta. Evaluar activar WPA2 según la política de la institución.,,Seguridad y protección de datos,To Do,"alimetrik,seguridad,pendiente",2
+Story,Servicios del comedor configurables por horario,"Como encargado, quiero definir los servicios y sus horarios desde el portal, para no depender de reprogramar el equipo.
+
+Criterios:
+* Crear, editar, suspender y borrar servicios
+* Las franjas activas no pueden cruzarse
+* Fuera de toda franja no se entrega ración",,Operación del comedor,Done,"alimetrik,negocio",8
+Story,Regla anti-duplicado por servicio y día,"Impedir que una misma persona reciba dos veces el mismo servicio en el mismo día, dejando constancia del intento.",,Operación del comedor,Done,"alimetrik,negocio",5
+Story,Métricas de cobertura del programa,"Raciones entregadas por servicio, duplicados bloqueados, huellas no reconocidas y porcentaje de alumnos atendidos.",,Operación del comedor,Done,"alimetrik,negocio",5
+Task,Ajuste automático de la hora del equipo,El equipo no tiene reloj con batería: toma la hora del primer navegador que abre el portal.,,Operación del comedor,Done,"alimetrik,negocio",2
+Bug,El anti-duplicado fallaba fuera de horario,"El nombre del servicio se truncaba al guardarse y la comparación nunca coincidía, permitiendo pasos repetidos.",,Operación del comedor,Done,"alimetrik,bug",2
+Task,Evaluar el rendimiento con matrícula grande,"Con 300 alumnos y 3 muestras cada uno, la identificación puede tardar varios segundos. Analizar optimización o pre-filtrado antes de un despliegue masivo.",,Operación del comedor,To Do,"alimetrik,rendimiento,pendiente",5
+Task,Manual de usuario,"Guía para el personal del comedor: acceso, registro de alumnos, autorización, enrolamiento, operación diaria, métricas y solución de problemas.",,Documentación y entrega,Done,"alimetrik,documentacion",5
+Task,Manual técnico,"Instalación del entorno, compilación, arquitectura, base de datos, API, seguridad, respaldo y diagnóstico.",,Documentación y entrega,Done,"alimetrik,documentacion",5
+Task,Documento explicativo del código,"Explicación didáctica del funcionamiento interno del sistema, archivo por archivo.",,Documentación y entrega,Done,"alimetrik,documentacion",3
+Task,Reorganizar el código en arquitectura MVC,"Separar el proyecto en modelos, vistas y controladores para facilitar su mantenimiento y evaluación.",,Documentación y entrega,Done,"alimetrik,arquitectura",8
+Task,Presentación del proyecto,Material de sustentación con la explicación del sistema para público no técnico.,,Documentación y entrega,Done,"alimetrik,documentacion",3
+Task,Capturas y evidencias de entrega,"Modelo entidad-relación, base de datos en phpMyAdmin, frontend, backend, código y manuales.",,Documentación y entrega,Done,"alimetrik,documentacion",3
+Task,Publicar el código en un repositorio,Subir el proyecto a Bitbucket o GitHub y enlazarlo con Jira para trazabilidad entre tareas y commits.,,Documentación y entrega,To Do,"alimetrik,pendiente",3

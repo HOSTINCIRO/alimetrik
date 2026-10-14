@@ -1,0 +1,28 @@
+# ALIMETRIK ESP32-P4 - driver 4500 + NBIS
+CONFIG_ESP32P4_SELECTS_REV_LESS_V3=y
+CONFIG_ESP32P4_REV_MIN_100=y
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+CONFIG_USB_HOST_HUBS_SUPPORTED=y
+# PSRAM
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_HEX=y
+CONFIG_SPIRAM_SPEED_200M=y
+# NBIS: arrays globales grandes en PSRAM (BSS externa)
+CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY=y
+# malloc puede usar PSRAM, pero RESERVANDO bastante RAM interna para el DMA del
+# USB (el buffer de imagen del lector, 115KB, DEBE ser interno DMA-capable) y
+# forzando a interno los bloques pequeños.
+CONFIG_SPIRAM_USE_MALLOC=y
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=4096
+CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL=163840
+# stack de tareas mayor (NBIS/bozorth usa recursion y arrays locales grandes)
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=49152
+# Tabla de particiones custom (con partición 'almacen' de 8MB para la BD)
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+# FATFS con wear levelling para la BD (sobrevive apagones)
+CONFIG_WL_SECTOR_SIZE_512=y
+# FATFS: soporte de nombres largos (registros.dat > 8.3)
+CONFIG_FATFS_LFN_STACK=y
+CONFIG_FATFS_MAX_LFN=64

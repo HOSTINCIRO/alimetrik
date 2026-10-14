@@ -1,0 +1,72 @@
+=====================================================================
+ ALIMETRIK  ·  Sistema de comedor escolar con huella dactilar
+ Entrega completa del proyecto
+=====================================================================
+
+CONTENIDO
+---------
+manuales/
+   MANUAL-DE-USUARIO.docx ..... Cómo usar el sistema (personal del comedor):
+                                acceso, registro de alumnos, autorización,
+                                enrolamiento, operación diaria y métricas.
+   MANUAL-TECNICO.docx ........ Cómo instalarlo y mantenerlo: entorno,
+                                compilación, arquitectura, base de datos,
+                                API, seguridad, respaldo y diagnóstico.
+   EXPLICACION-DEL-CODIGO.docx  Explicación didáctica de cómo funciona
+                                el código por dentro, paso a paso.
+
+codigo/                        Código fuente completo (arquitectura MVC)
+   main/
+      main.c ................... Punto de entrada
+      modelos/ ................. MODELO: datos y reglas de negocio
+         almacenamiento.c/h .......... memoria permanente y cerrojo
+         modelo_estudiante.c/h ....... alumnos y su autorización
+         modelo_biometrico.c/h ....... plantillas e identificación 1:N
+         modelo_registro.c/h ......... bitácora y anti-duplicado
+         modelo_usuario.c/h .......... encargados y contraseñas
+      vistas/ .................. VISTA: lo que ve el usuario
+         vista_sistema.html .......... interfaz principal (6 pestañas)
+         vista_login.html ............ inicio de sesión
+         vista_terminos.html ......... política de datos biométricos
+         vista_json.c/h .............. presentación de datos para la API
+      controladores/ ........... CONTROLADOR: coordinación
+         controlador_web.c/h ......... servidor HTTP y rutas
+         controlador_auth.c/h ........ sesiones y permisos
+         controlador_red.c/h ......... WiFi, DNS y reloj
+         controlador_lector.c/h ...... driver USB del lector de huellas
+   componentes/reconocimiento/ .. Motor biométrico (NIST + comparador propio)
+   partitions.csv, sdkconfig.defaults, CMakeLists.txt, PROTOCOLO-4500.md
+
+base-de-datos/
+   esquema.sql ................ Modelo relacional equivalente, con tablas,
+                                llaves foráneas, índices y consultas.
+   LEEME-base-de-datos.txt .... Dónde y cómo se almacenan los datos reales.
+
+presentacion/
+   ALIMETRIK-grado11.pptx ..... Presentación didáctica del proyecto (+ PDF)
+
+ACCESO AL SISTEMA
+-----------------
+1. Conecte el celular a la red WiFi "ALIMETRIK".
+2. Abra http://192.168.4.1 en el navegador.
+3. Usuario inicial: admin   Contraseña: admin123
+   >>> CÁMBIELA apenas ingrese: Configuración -> Mi cuenta <<<
+
+COMPILAR Y GRABAR
+-----------------
+   cd codigo/
+   source ~/esp/esp-idf/export.sh
+   idf.py build
+   idf.py -p /dev/cu.usbserial-110 -b 460800 flash
+
+   (Ver el Manual Técnico para la instalación del entorno ESP-IDF.)
+
+PROTECCIÓN DE DATOS
+-------------------
+La huella dactilar es un dato personal sensible. El sistema exige la
+autorización previa, expresa e informada del titular o de su representante
+legal (Ley 1581 de 2012 y Decreto 1377 de 2013), no almacena imágenes de
+huella —solo plantillas irreversibles— y permite revocar la autorización
+y suprimir los datos en cualquier momento. La política completa está en
+la vista "Términos" del sistema (http://192.168.4.1/terminos).
+=====================================================================

@@ -1,0 +1,85 @@
+﻿ID de la actividad,Tipo de actividad,Resumen,Descripción,Elemento principal,Estado,Etiquetas,Puntos de historia
+1,Épica,Hardware y lector de huellas,Poner en marcha la placa ESP32-P4 y comunicarla con el lector DigitalPersona U.are.U 4500 por USB.,,Listo,alimetrik,
+2,Épica,Reconocimiento biométrico,Extraer las minucias de la huella y compararlas para identificar a la persona dentro del propio equipo.,,Listo,alimetrik,
+3,Épica,Base de datos persistente,"Almacenar alumnos, plantillas biométricas, registros y usuarios en la memoria del equipo, con datos que sobrevivan apagones.",,Listo,alimetrik,
+4,Épica,Red propia y portal web,Crear la red WiFi del equipo y publicar la interfaz de administración y el kiosco del comedor.,,Listo,alimetrik,
+5,Épica,Seguridad y protección de datos,Control de acceso de los encargados y cumplimiento de la Ley 1581 de 2012 sobre datos biométricos.,,Listo,alimetrik,
+6,Épica,Operación del comedor,"Reglas del negocio: servicios por horario, anti-duplicado, métricas y registro de entregas.",,Listo,alimetrik,
+7,Épica,Documentación y entrega,"Manuales, modelo de datos, presentación y material de sustentación.",,Listo,alimetrik,
+8,Historia,Comunicar la placa con el lector de huellas por USB,"Como sistema, necesito detectar el lector U.are.U 4500 conectado al puerto USB y encenderlo, para poder capturar huellas.
+
+Criterios de aceptación:
+* El equipo detecta el lector al conectarlo
+* Se completa la secuencia de encendido del sensor
+* Si el lector se desconecta, la interfaz lo advierte",1,Listo,"alimetrik,hardware,usb",5
+9,Tarea,Documentar el protocolo USB del lector 4500,"Registrar los comandos, registros y eventos del lector en el documento PROTOCOLO-4500.md, ya que el fabricante no publica documentación para microcontroladores.",1,Listo,"alimetrik,documentacion",3
+10,Historia,Capturar y descifrar la imagen de la huella,"La imagen llega cifrada desde el lector. Debe leerse completa y descifrarse para obtener una imagen utilizable.
+
+Criterios:
+* Imagen de 384x290 leída sin pérdida de bytes
+* Descifrado correcto verificado por contraste",1,Listo,"alimetrik,hardware",5
+11,Error,El lector queda inutilizable tras un tiempo de espera agotado,"Si nadie pone el dedo durante 60 segundos, la transferencia USB pendiente deja el canal bloqueado y todas las capturas siguientes fallan hasta reiniciar.
+
+Solución: limpiar el canal USB tras cada timeout y añadir una escalera de recuperación.",1,Listo,"alimetrik,bug,critico",3
+12,Tarea,Recuperación automática ante fallos del lector,"Si dos capturas seguidas fallan, reiniciar el protocolo del lector; si la recuperación falla dos veces, reiniciar el equipo conservando los datos.",1,Listo,"alimetrik,robustez",3
+13,Historia,Extraer las minucias de la huella dentro del equipo,"Integrar el algoritmo MINDTCT del NIST en el microcontrolador para obtener los puntos característicos de cada huella.
+
+Criterios:
+* Entre 20 y 60 minucias por captura
+* Tiempo de extracción menor a 5 segundos",2,Listo,"alimetrik,biometria",8
+14,Historia,Comparador de huellas propio,"El comparador oficial del NIST no funciona correctamente en arquitectura de 32 bits. Desarrollar un comparador propio basado en alineación geométrica y conteo de correspondencias.
+
+Criterios:
+* Mismo dedo por encima del umbral, dedos distintos por debajo
+* Comparación en menos de 50 ms",2,Listo,"alimetrik,biometria,algoritmo",13
+15,Tarea,Optimizar la comparación con rejilla espacial,"Reducir el tiempo de comparación de 4,8 segundos a 30 milisegundos mediante una rejilla espacial que evita comparar todos los puntos contra todos.",2,Listo,"alimetrik,rendimiento",5
+16,Error,El control de calidad rechaza las capturas correctas,"El medidor de calidad interpretaba el contraste de las crestas como ruido: cuanto mejor se apoyaba el dedo, más se rechazaba la captura (100% de rechazos).
+
+Solución: sustituir ese criterio por el porcentaje de sensor cubierto por el dedo.",2,Listo,"alimetrik,bug,critico",5
+17,Historia,Enrolamiento con tres muestras por dedo,Con una sola muestra el puntaje quedaba al límite del umbral. Tomar tres muestras del mismo dedo y comparar contra todas.,2,Listo,"alimetrik,biometria",5
+18,Historia,Almacenamiento persistente en la memoria del equipo,"Guardar alumnos, plantillas, registros y usuarios en la memoria flash, de modo que los datos sobrevivan a cortes de energía.",3,Listo,"alimetrik,datos",8
+19,Tarea,Diseñar el modelo de datos y su equivalente relacional,Definir las cinco tablas del sistema y documentar el modelo entidad-relación y su equivalente en SQL para efectos académicos y de una eventual migración a servidor.,3,Listo,"alimetrik,datos,documentacion",3
+20,Error,Guardar reescribía toda la tabla y congelaba el equipo,"Cada alta reescribía la tabla completa (1,7 s con el firmware detenido). Solución: anexar únicamente el registro nuevo.",3,Listo,"alimetrik,bug,rendimiento",3
+21,Error,Una escritura fallida podía borrar toda una tabla,El archivo se vaciaba antes de escribir: si la escritura fallaba a la mitad se perdían todos los datos. Solución: escritura atómica con archivo temporal.,3,Listo,"alimetrik,bug,critico",3
+22,Error,Los identificadores se reutilizaban tras borrar y reiniciar,"Al borrar al último alumno y reiniciar, su identificador se asignaba a otro y los registros históricos quedaban atribuidos a la persona equivocada.",3,Listo,"alimetrik,bug,critico",2
+23,Tarea,Migración automática del formato anterior,Al añadir los campos de autorización cambió la estructura: convertir automáticamente los datos existentes al arrancar.,3,Listo,"alimetrik,datos",3
+24,Historia,Red WiFi propia del equipo,El equipo crea su propia red inalámbrica para que cualquier celular pueda administrarlo sin internet ni aplicaciones.,4,Listo,"alimetrik,red",5
+25,Tarea,Portal cautivo,"Servidor DNS que redirige cualquier consulta a la página del sistema, para que el navegador la abra automáticamente al conectarse.",4,Listo,"alimetrik,red",3
+26,Historia,Interfaz web del sistema,"Página única con las secciones Comedor, Métricas, Alumnos, Registros, Nuevo y Configuración, servida desde la memoria del propio equipo.",4,Listo,"alimetrik,frontend",8
+27,Historia,Kiosco de entrega del comedor,Pantalla de operación diaria: tarjeta grande con el resultado de cada huella y señal sonora distinta para autorizado y rechazado.,4,Listo,"alimetrik,frontend",5
+28,Error,Cada petición web tardaba 250 ms de más,Retardo de Nagle combinado con confirmación diferida de TCP. Solución: activar TCP_NODELAY. Resultado: de 250 ms a 4-12 ms.,4,Listo,"alimetrik,bug,rendimiento",2
+29,Error,La interfaz no confirmaba las acciones del usuario,El aviso de huella leída duraba menos que el ciclo de actualización de la página: nunca se veía y el usuario creía que el sistema no respondía.,4,Listo,"alimetrik,bug,usabilidad",3
+30,Historia,Inicio de sesión para los encargados,"Como institución, necesito que solo el personal autorizado acceda al sistema, porque maneja datos personales sensibles.
+
+Criterios:
+* Usuario y contraseña con contraseñas cifradas (SHA-256 con sal)
+* Roles de administrador y operador
+* La sesión caduca por inactividad",5,Listo,"alimetrik,seguridad",8
+31,Historia,Consentimiento informado para datos biométricos,"Conforme a la Ley 1581 de 2012, la huella es un dato sensible: exigir autorización previa, expresa e informada del titular o su representante legal antes de registrar a un alumno.
+
+Criterios:
+* No se puede registrar un alumno sin marcar la autorización
+* Se guarda quién autoriza, su documento y la fecha
+* No se puede enrolar la huella sin autorización vigente",5,Listo,"alimetrik,seguridad,legal",8
+32,Tarea,Política de tratamiento de datos publicada en el sistema,"Documento consultable desde la propia interfaz, con finalidad, carácter facultativo, derechos del titular y tratamiento de datos de menores de edad.",5,Listo,"alimetrik,legal,documentacion",3
+33,Historia,Derecho de revocación y supresión,Permitir revocar la autorización en cualquier momento: se eliminan de inmediato las plantillas biométricas de la persona.,5,Listo,"alimetrik,seguridad,legal",5
+34,Error,Un usuario borrado seguía operando con su sesión abierta,Al eliminar un usuario no se cerraban sus sesiones activas. Solución: revocar todas sus sesiones al borrarlo.,5,Listo,"alimetrik,bug,seguridad",2
+35,Tarea,Proteger la red WiFi con contraseña,Actualmente la red del equipo es abierta. Evaluar activar WPA2 según la política de la institución.,5,Por hacer,"alimetrik,seguridad,pendiente",2
+36,Historia,Servicios del comedor configurables por horario,"Como encargado, quiero definir los servicios y sus horarios desde el portal, para no depender de reprogramar el equipo.
+
+Criterios:
+* Crear, editar, suspender y borrar servicios
+* Las franjas activas no pueden cruzarse
+* Fuera de toda franja no se entrega ración",6,Listo,"alimetrik,negocio",8
+37,Historia,Regla anti-duplicado por servicio y día,"Impedir que una misma persona reciba dos veces el mismo servicio en el mismo día, dejando constancia del intento.",6,Listo,"alimetrik,negocio",5
+38,Historia,Métricas de cobertura del programa,"Raciones entregadas por servicio, duplicados bloqueados, huellas no reconocidas y porcentaje de alumnos atendidos.",6,Listo,"alimetrik,negocio",5
+39,Tarea,Ajuste automático de la hora del equipo,El equipo no tiene reloj con batería: toma la hora del primer navegador que abre el portal.,6,Listo,"alimetrik,negocio",2
+40,Error,El anti-duplicado fallaba fuera de horario,"El nombre del servicio se truncaba al guardarse y la comparación nunca coincidía, permitiendo pasos repetidos.",6,Listo,"alimetrik,bug",2
+41,Tarea,Evaluar el rendimiento con matrícula grande,"Con 300 alumnos y 3 muestras cada uno, la identificación puede tardar varios segundos. Analizar optimización o pre-filtrado antes de un despliegue masivo.",6,Por hacer,"alimetrik,rendimiento,pendiente",5
+42,Tarea,Manual de usuario,"Guía para el personal del comedor: acceso, registro de alumnos, autorización, enrolamiento, operación diaria, métricas y solución de problemas.",7,Listo,"alimetrik,documentacion",5
+43,Tarea,Manual técnico,"Instalación del entorno, compilación, arquitectura, base de datos, API, seguridad, respaldo y diagnóstico.",7,Listo,"alimetrik,documentacion",5
+44,Tarea,Documento explicativo del código,"Explicación didáctica del funcionamiento interno del sistema, archivo por archivo.",7,Listo,"alimetrik,documentacion",3
+45,Tarea,Reorganizar el código en arquitectura MVC,"Separar el proyecto en modelos, vistas y controladores para facilitar su mantenimiento y evaluación.",7,Listo,"alimetrik,arquitectura",8
+46,Tarea,Presentación del proyecto,Material de sustentación con la explicación del sistema para público no técnico.,7,Listo,"alimetrik,documentacion",3
+47,Tarea,Capturas y evidencias de entrega,"Modelo entidad-relación, base de datos en phpMyAdmin, frontend, backend, código y manuales.",7,Listo,"alimetrik,documentacion",3
+48,Tarea,Publicar el código en un repositorio,Subir el proyecto a Bitbucket o GitHub y enlazarlo con Jira para trazabilidad entre tareas y commits.,7,Por hacer,"alimetrik,pendiente",3

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ALIMETRIK · Comedor Escolar</title>
+<style>
+  :root{
+    --bg:#17181a; --card:#222427; --card2:#2b2e32; --line:#3a3e43;
+    --txt:#eceef0; --muted:#9aa1a8; --pri:#b9c0c7; --pri2:#a6adb5;
+    --ok:#2fd07f; --dup:#f6c453; --no:#ff6b6b; --unk:#8b9bb0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased}
+  header{background:linear-gradient(135deg,#a6adb5,#9aa3ab);padding:16px;
+         display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5;
+         box-shadow:0 2px 12px rgba(0,0,0,.35)}
+  header .logo{width:40px;height:40px;border-radius:10px;background:#fff;color:#9aa3ab;
+       display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}
+  header h1{font-size:19px;margin:0;letter-spacing:.5px}
+  header .sub{font-size:12px;opacity:.95;margin-top:2px}
+  .clock{margin-left:auto;text-align:right;font-size:12px;line-height:1.35}
+  .clock b{font-size:16px}
+  .wrap{max-width:960px;margin:0 auto;padding:16px}
+  .tabs{display:flex;gap:6px;margin:14px 0;flex-wrap:wrap}
+  .tab{flex:1;min-width:80px;text-align:center;padding:10px 6px;border-radius:10px;background:var(--card);
+       color:var(--muted);cursor:pointer;border:1px solid var(--line);font-weight:600;font-size:14px}
+  .tab.on{background:var(--pri);color:#1b1d1f;border-color:var(--pri)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .card .n{font-size:30px;font-weight:800;line-height:1}
+  .card .l{font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.4px}
+  .card.ok .n{color:var(--ok)} .card.dup .n{color:var(--dup)}
+  .card.no .n{color:var(--no)} .card.unk .n{color:var(--unk)}
+  h2{font-size:15px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase;letter-spacing:.5px}
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden}
+  th,td{text-align:left;padding:11px 12px;font-size:14px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.4px;background:var(--card2)}
+  tr:last-child td{border-bottom:none}
+  .pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap}
+  .pill.permitido{background:rgba(47,208,127,.15);color:var(--ok)}
+  .pill.duplicado{background:rgba(246,196,83,.15);color:var(--dup)}
+  .pill.no_autorizado{background:rgba(255,107,107,.15);color:var(--no)}
+  .pill.desconocido{background:rgba(139,155,176,.15);color:var(--unk)}
+  .pill.sin_servicio{background:rgba(88,166,255,.15);color:#58a6ff}
+  .kiosk.sin_servicio{border-color:#58a6ff} .kiosk.sin_servicio .k-res{color:#58a6ff}
+  form{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;
+       display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  form .full{grid-column:1/3}
+  input{width:100%;padding:11px;border-radius:9px;border:1px solid var(--line);
+       background:var(--bg);color:var(--txt);font-size:15px}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+  button{background:var(--pri);color:#1b1d1f;border:none;padding:12px;border-radius:10px;
+       font-weight:800;font-size:15px;cursor:pointer}
+  button.mini{padding:6px 10px;font-size:12px;border-radius:8px}
+  button.enrol{background:rgba(185,192,199,.15);color:var(--pri)}
+  button.danger{background:transparent;color:var(--no);border:1px solid var(--no)}
+  .row-act{display:flex;gap:6px;justify-content:flex-end}
+  .muted{color:var(--muted)}
+  /* !important: .enrollbar y .kiosk declaran display mas abajo y, al tener
+     la misma especificidad, ganaban por orden dejando visibles bloques ocultos */
+  .hide{display:none !important}
+  .foot{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);
+       margin-right:6px;box-shadow:0 0 8px var(--ok)}
+  .banner{border-radius:14px;padding:16px;margin-bottom:6px;border:1px solid var(--line);background:var(--card)}
+  .banner .big{font-size:22px;font-weight:800;margin-top:4px}
+  .banner.permitido{border-color:var(--ok)} .banner.duplicado{border-color:var(--dup)}
+  .banner.no_autorizado{border-color:var(--no)} .banner.desconocido{border-color:var(--unk)}
+  .lectorbar{background:var(--card2);border:1px solid var(--line);border-radius:12px;
+        padding:12px 14px;margin-bottom:12px;font-size:15px;font-weight:600}
+  .kiosk{background:var(--card);border:3px solid var(--line);border-radius:20px;
+        padding:34px 18px;text-align:center;transition:border-color .3s, background .3s}
+  .kiosk .k-serv{font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+  .kiosk .k-icon{font-size:56px;margin:14px 0}
+  .kiosk .k-nom{font-size:28px;font-weight:800;line-height:1.2}
+  .kiosk .k-res{font-size:18px;font-weight:700;margin-top:10px;letter-spacing:.5px}
+  .kiosk.ok{border-color:var(--ok);background:rgba(47,208,127,.08)}
+  .kiosk.ok .k-res{color:var(--ok)}
+  .kiosk.dup{border-color:var(--dup);background:rgba(246,196,83,.08)}
+  .kiosk.dup .k-res{color:var(--dup)}
+  .kiosk.no{border-color:var(--no);background:rgba(255,107,107,.08)}
+  .kiosk.no .k-res{color:var(--no)}
+  .kiosk.unk{border-color:var(--unk)}
+  .kiosk.unk .k-res{color:var(--unk)}
+  .k-count{text-align:center;color:var(--muted);font-size:14px;padding:14px}
+  .cover{background:var(--card);border:1px solid var(--line);border-radius:12px;
+        padding:12px 14px;margin-top:12px}
+  .cover-txt{font-size:13px;color:var(--muted);margin-bottom:8px}
+  .cover-bar{height:10px;background:var(--bg);border-radius:6px;overflow:hidden}
+  .cover-fill{height:100%;background:var(--pri);width:0%;transition:width .5s}
+  .warn{background:rgba(246,196,83,.12);border:1px solid var(--dup);color:var(--dup);
+        border-radius:12px;padding:12px;margin-bottom:12px;font-size:14px;display:flex;
+        align-items:center;gap:10px;flex-wrap:wrap}
+  .warn button{background:var(--dup);color:#2a2000;padding:8px 12px;font-size:13px;border-radius:8px}
+  .enrollbar{position:fixed;left:0;right:0;bottom:0;background:var(--pri2);color:#062018;
+       padding:14px 16px;display:flex;align-items:center;gap:12px;z-index:15;font-weight:700}
+  .enrollbar button{background:rgba(0,0,0,.2);color:#fff;padding:8px 12px;font-size:13px}
+  .spin{width:16px;height:16px;border:3px solid rgba(0,0,0,.25);border-top-color:#052;
+       border-radius:50%;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .user{margin-left:14px;text-align:right;font-size:12px}
+  .user .salir{background:rgba(0,0,0,.22);color:#fff;padding:5px 11px;font-size:11.5px;
+       border-radius:7px;margin-top:4px;font-weight:700}
+  .sep{color:var(--pri);font-size:12.5px;font-weight:800;text-transform:uppercase;
+       letter-spacing:.6px;border-top:1px solid var(--line);padding-top:14px;margin-top:6px}
+  .consent{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:13px}
+  .check{display:flex;gap:11px;align-items:flex-start;font-size:13px;color:var(--txt);
+         line-height:1.55;cursor:pointer;text-transform:none;letter-spacing:0;margin:0}
+  .check input{width:20px;height:20px;flex:0 0 20px;margin:1px 0 0;accent-color:var(--pri)}
+  .check a{color:var(--pri)}
+  .nota{font-size:11.5px;color:var(--muted);margin-top:9px;line-height:1.5}
+  select{width:100%;padding:11px;border-radius:9px;border:1px solid var(--line);
+         background:var(--bg);color:var(--txt);font-size:15px}
+  .solo-admin.oculto{display:none !important}
+  .tabs.sub{margin:10px 0 12px;gap:5px}
+  .tabs.sub .tab{font-size:12.5px;padding:8px 5px;min-width:70px}
+  .cnt{display:inline-block;min-width:20px;padding:1px 6px;border-radius:10px;
+       background:rgba(0,0,0,.28);font-size:11px;margin-left:4px}
+  .tab.on .cnt{background:rgba(0,0,0,.18)}
+  .lista{background:var(--card);border:1px solid var(--line);border-radius:12px;
+         max-height:340px;overflow-y:auto}
+  .fila{display:flex;align-items:center;gap:10px;padding:10px 13px;border-bottom:1px solid var(--line);font-size:14px}
+  .fila:last-child{border-bottom:none}
+  .fila .g{color:var(--muted);font-size:12px;margin-left:auto;white-space:nowrap}
+  .fila .h{color:var(--ok);font-weight:700;font-size:12.5px;white-space:nowrap}
+  .fila.pen .num{color:var(--dup)} .fila .num{color:var(--muted);font-size:12px;min-width:22px}
+  .vacio{padding:18px 14px;color:var(--muted);font-size:13.5px;text-align:center}
+  .barrita{height:6px;background:var(--bg);border-radius:4px;overflow:hidden;min-width:70px;max-width:110px;margin-left:auto}
+  .barrita i{display:block;height:100%;background:var(--pri)}
+  .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--pri);
+       color:#1b1d1f;padding:12px 18px;border-radius:10px;font-weight:700;opacity:0;
+       transition:opacity .3s;pointer-events:none;z-index:20;max-width:90%}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">A</div>
+  <div>
+    <h1>ALIMETRIK</h1>
+    <div class="sub"><span class="dot"></span>Comedor Escolar · en la placa</div>
+  </div>
+  <div class="clock" id="clock"><b id="c-hora">--:--</b><br><span id="c-serv" class="muted">sin hora</span></div>
+  <div class="user" id="user-box">
+    <span id="u-nom">…</span>
+    <button class="salir" onclick="cerrarSesion()">Salir</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="lectorbar">🖐 <span id="lec-txt">conectando…</span></div>
+  <div class="tabs">
+    <div class="tab on" data-v="comedor">Comedor</div>
+    <div class="tab" data-v="panel">Métricas</div>
+    <div class="tab" data-v="estudiantes">Alumnos</div>
+    <div class="tab" data-v="registros">Registros</div>
+    <div class="tab" data-v="nuevo">+ Nuevo</div>
+    <div class="tab solo-admin" data-v="config">Configuración</div>
+  </div>
+
+  <!-- COMEDOR (kiosco de entrega) -->
+  <section id="v-comedor">
+    <div class="kiosk" id="kiosk">
+      <div class="k-serv" id="k-serv">–</div>
+      <div class="k-icon" id="k-icon">🖐</div>
+      <div class="k-nom" id="k-nom">Pon el dedo en el lector</div>
+      <div class="k-res" id="k-res"></div>
+    </div>
+    <div class="k-count" id="k-count">–</div>
+  </section>
+
+  <!-- METRICAS -->
+  <section id="v-panel" class="hide">
+    <div id="warn-hora" class="warn hide">
+      ⏰ La placa no tiene la hora puesta. Los servicios se detectan por horario.
+      <button onclick="fijarHora()">Fijar hora ahora</button>
+    </div>
+    <div id="ultimo" class="banner hide">
+      <div class="muted">Última huella</div>
+      <div class="big" id="u-nombre">–</div>
+      <div><span class="pill" id="u-pill"></span> <span class="muted" id="u-meta"></span></div>
+    </div>
+    <h2>Hoy <span id="m-fecha" class="badge"></span></h2>
+    <div class="cards">
+      <div class="card ok"><div class="n" id="h-des">–</div><div class="l">Desayunos</div></div>
+      <div class="card ok"><div class="n" id="h-alm">–</div><div class="l">Almuerzos</div></div>
+      <div class="card ok"><div class="n" id="h-ref">–</div><div class="l">Refrigerios</div></div>
+      <div class="card dup"><div class="n" id="h-dup">–</div><div class="l">Dup. bloqueados</div></div>
+      <div class="card unk"><div class="n" id="h-unk">–</div><div class="l">Desconocidos</div></div>
+    </div>
+    <div class="cover">
+      <div class="cover-txt"><span id="cov-txt">–</span></div>
+      <div class="cover-bar"><div class="cover-fill" id="cov-fill"></div></div>
+    </div>
+    <h2>¿Quiénes han pasado hoy? <span id="r-serv" class="badge"></span></h2>
+    <div class="tabs sub">
+      <div class="tab on" data-r="atendidos">Atendidos <span class="cnt" id="c-at">0</span></div>
+      <div class="tab" data-r="pendientes">Faltan <span class="cnt" id="c-pen">0</span></div>
+      <div class="tab" data-r="duplicados">Repitieron <span class="cnt" id="c-dup">0</span></div>
+      <div class="tab" data-r="grados">Por grado</div>
+    </div>
+    <div id="lista-resumen" class="lista"></div>
+
+    <h2>Totales históricos</h2>
+    <div class="cards">
+      <div class="card"><div class="n" id="m-est">–</div><div class="l">Alumnos</div></div>
+      <div class="card"><div class="n" id="m-hue">–</div><div class="l">Huellas</div></div>
+      <div class="card"><div class="n" id="m-reg">–</div><div class="l">Registros</div></div>
+      <div class="card ok"><div class="n" id="m-ok">–</div><div class="l">Permitidos</div></div>
+      <div class="card dup"><div class="n" id="m-dup">–</div><div class="l">Duplicados</div></div>
+      <div class="card no"><div class="n" id="m-no">–</div><div class="l">No autoriz.</div></div>
+      <div class="card unk"><div class="n" id="m-unk">–</div><div class="l">Desconocidos</div></div>
+    </div>
+    <h2>Servicios</h2>
+    <table><thead><tr><th>Servicio</th><th>Registros</th></tr></thead>
+      <tbody id="t-serv"><tr><td colspan="2" class="muted">Sin datos aún</td></tr></tbody></table>
+  </section>
+
+  <!-- ALUMNOS -->
+  <section id="v-estudiantes" class="hide">
+    <h2>Alumnos registrados</h2>
+    <table><thead><tr><th>Documento</th><th>Nombre</th><th>Grado</th><th>🖐</th><th></th></tr></thead>
+      <tbody id="t-est"></tbody></table>
+    <div class="muted" style="font-size:12px;margin-top:10px">
+      🖐 = huellas enroladas. Usa “＋ huella” y luego pon el dedo del alumno en el lector de la placa.
+    </div>
+  </section>
+
+  <!-- REGISTROS -->
+  <section id="v-registros" class="hide">
+    <h2>Últimos registros de asistencia</h2>
+    <table><thead><tr><th>Hora</th><th>Alumno</th><th>Servicio</th><th>Resultado</th></tr></thead>
+      <tbody id="t-reg"></tbody></table>
+  </section>
+
+  <!-- NUEVO ALUMNO (con autorización de datos biométricos) -->
+  <section id="v-nuevo" class="hide">
+    <h2>Registrar alumno</h2>
+    <form id="f-nuevo">
+      <div><label>Documento del alumno *</label><input name="documento" required></div>
+      <div><label>Grado</label><input name="grado" placeholder="11-A"></div>
+      <div><label>Nombre *</label><input name="nombre" required></div>
+      <div><label>Apellido *</label><input name="apellido" required></div>
+
+      <div class="full sep">Autorización de tratamiento de datos biométricos</div>
+      <div><label>Nombre del acudiente / representante legal *</label>
+           <input name="acudiente" required placeholder="Quien autoriza"></div>
+      <div><label>Documento del acudiente *</label>
+           <input name="doc_acudiente" required></div>
+
+      <div class="full consent">
+        <label class="check">
+          <input type="checkbox" name="autorizacion" id="chk-auto">
+          <span>Declaro que leí y acepto la
+            <a href="/terminos" target="_blank">Política de Tratamiento de Datos Biométricos</a>
+            y <b>autorizo de forma libre, previa, expresa e informada</b> el registro de la
+            huella dactilar del estudiante, con la única finalidad de controlar la entrega
+            de raciones del comedor escolar (Ley 1581 de 2012).</span>
+        </label>
+        <div class="nota">
+          La autorización es <b>voluntaria</b> y puede revocarse en cualquier momento desde
+          la pestaña «Alumnos». Sin ella no es posible registrar la huella.
+        </div>
+      </div>
+
+      <div class="full"><button type="submit">Guardar alumno</button></div>
+      <div class="full muted" style="font-size:12px">
+        Después, en «Alumnos» → «＋ huella», el alumno pone su dedo 3 veces en el lector.
+      </div>
+    </form>
+  </section>
+
+  <!-- CONFIGURACIÓN -->
+  <section id="v-config" class="hide">
+    <h2>Servicios y horarios del comedor</h2>
+    <div class="muted" style="font-size:12.5px;margin-bottom:10px">
+      El sistema decide qué servicio corresponde según la hora. Fuera de estas
+      franjas no se entrega ración.
+    </div>
+    <table><thead><tr><th>Servicio</th><th>Desde</th><th>Hasta</th><th>Estado</th><th></th></tr></thead>
+      <tbody id="t-srv"></tbody></table>
+
+    <h2>Agregar o modificar un servicio</h2>
+    <form id="f-srv">
+      <input type="hidden" name="id" id="srv-id" value="">
+      <div><label>Nombre del servicio *</label>
+           <input name="nombre" id="srv-nombre" required placeholder="Almuerzo"></div>
+      <div><label>Estado</label>
+        <select name="activo" id="srv-activo">
+          <option value="true">Activo</option>
+          <option value="false">Suspendido</option>
+        </select></div>
+      <div><label>Hora de inicio *</label><input name="inicio" id="srv-inicio" type="time" required></div>
+      <div><label>Hora de fin *</label><input name="fin" id="srv-fin" type="time" required></div>
+      <div class="full" style="display:flex;gap:10px">
+        <button type="submit" id="srv-btn" style="flex:1">Guardar servicio</button>
+        <button type="button" class="danger" onclick="srvLimpiar()" style="flex:0 0 auto">Cancelar</button>
+      </div>
+      <div class="full muted" style="font-size:12px">
+        Las franjas no pueden cruzarse entre servicios activos.
+        <a href="#" onclick="srvRestaurar();return false;">Restaurar los horarios habituales</a>
+      </div>
+    </form>
+
+    <h2>Mi cuenta</h2>
+    <form id="f-clave">
+      <div><label>Contraseña actual</label><input name="actual" type="password" required></div>
+      <div><label>Contraseña nueva (mínimo 6)</label><input name="nueva" type="password" required minlength="6"></div>
+      <div class="full"><button type="submit">Cambiar mi contraseña</button></div>
+    </form>
+
+    <h2>Usuarios del sistema</h2>
+    <table><thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th></th></tr></thead>
+      <tbody id="t-usr"></tbody></table>
+
+    <h2>Crear usuario</h2>
+    <form id="f-usr">
+      <div><label>Usuario *</label><input name="usuario" required autocapitalize="none"></div>
+      <div><label>Nombre completo</label><input name="nombre"></div>
+      <div><label>Contraseña *</label><input name="clave" type="password" required minlength="6"></div>
+      <div><label>Rol</label>
+        <select name="rol">
+          <option value="0">Operador (solo comedor)</option>
+          <option value="1">Administrador (todo)</option>
+        </select></div>
+      <div class="full"><button type="submit">Crear usuario</button></div>
+    </form>
+
+    <h2>Información del equipo</h2>
+    <table><tbody id="t-info"></tbody></table>
+  </section>
+
+  <div class="foot">ALIMETRIK · ESP32-P4 + DigitalPersona 4500 · datos guardados en la placa</div>
+</div>
+
+<div id="enrollbar" class="enrollbar hide">
+  <div style="font-size:22px">🖐</div>
+  <div>
+    <div>Enrolando a <b id="enroll-nom">…</b></div>
+    <div id="enroll-est" style="font-weight:400;font-size:13px;opacity:.9"></div>
+  </div>
+  <button onclick="cancelEnrol()" style="margin-left:auto">Cancelar</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);}
+async function j(u,o,ms){
+  // timeout: 6s para LEER (si la placa esta ocupada, el proximo refresco
+  // reintenta) y 20s para ESCRIBIR (guardar en flash congela el chip ~2s y
+  // antes se cancelaba la peticion aunque el alumno SI se hubiera guardado)
+  const esEscritura = o && o.method === 'POST';
+  const lim = ms || (esEscritura ? 20000 : 6000);
+  const c=new AbortController(), tt=setTimeout(()=>c.abort(),lim);
+  try{
+    const r=await fetch(u,Object.assign({signal:c.signal},o||{}));
+    let data=null;
+    try{ data=await r.json(); }catch(e){ data=null; }
+    if(r.status===401){ location.href='/login'; throw new Error('sin sesion'); }
+    if(!r.ok){ const err=new Error(r.status); err.status=r.status; err.data=data; throw err; }
+    return data;
+  }finally{clearTimeout(tt);}
+}
+// mientras se guarda, NO refrescar: el servidor tiene un solo hilo y el
+// polling le quitaba el turno a la peticion importante
+let escribiendo=false;
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+const POST=b=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
+
+let estMap={};       // id -> nombre para el enrollbar
+let lastEnroll=0;    // para detectar cuando termina el enrolamiento
+let autoHora=false;  // fijar la hora automaticamente una sola vez
+let enVuelo=false;   // no apilar peticiones de estado
+
+const VISTAS=['comedor','panel','estudiantes','registros','nuevo','config'];
+$$('.tab').forEach(t=>t.onclick=()=>{
+  $$('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
+  VISTAS.forEach(v=>$('#v-'+v).classList.toggle('hide',v!==t.dataset.v));
+  if(t.dataset.v==='estudiantes')cargarEst();
+  if(t.dataset.v==='registros')cargarReg();
+  if(t.dataset.v==='config')cargarConfig();
+  if(t.dataset.v==='panel')cargarResumen();
+  if(t.dataset.v==='comedor')initAudio();   // el toque habilita el sonido
+});
+
+// ---- sesión del encargado ----
+let sesion=null;
+async function cargarSesion(){
+  try{
+    const d=await j('/api/sesion');
+    sesion=d;
+    $('#u-nom').textContent=(d.nombre||d.usuario)+' · '+(d.rol===1?'Administrador':'Operador');
+    // el operador no ve las funciones de administración
+    const esAdmin = d.rol===1;
+    $$('.solo-admin').forEach(e=>e.classList.toggle('oculto',!esAdmin));
+    if(!esAdmin){ ['nuevo'].forEach(v=>{const t=document.querySelector('.tab[data-v='+v+']'); if(t)t.classList.add('oculto');}); }
+  }catch(e){ location.href='/login'; }
+}
+async function cerrarSesion(){
+  try{ await fetch('/api/logout',{method:'POST'}); }catch(e){}
+  location.href='/login';
+}
+
+// ---- sonido del comedor: bip agudo = entregado, doble grave = rechazo ----
+let actx=null;
+function initAudio(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume();}catch(e){}}
+document.addEventListener('touchstart',initAudio,{once:true});
+document.addEventListener('click',initAudio,{once:true});
+function beep(res){
+  if(!actx)return;
+  try{
+    const t=actx.currentTime;
+    const mk=(f,dur,at)=>{const o=actx.createOscillator(),g=actx.createGain();
+      o.frequency.value=f;o.connect(g);g.connect(actx.destination);
+      g.gain.setValueAtTime(.35,t+at);g.gain.exponentialRampToValueAtTime(.001,t+at+dur);
+      o.start(t+at);o.stop(t+at+dur);};
+    if(res==='permitido'){mk(880,.15,0);mk(1318,.22,.13);}
+    else{mk(233,.22,0);mk(233,.25,.28);}
+  }catch(e){}
+}
+
+let lastUltimoId=0, primeraCarga=true;
+const FRASE={permitido:'ENTREGADO ✓', duplicado:'YA RECIBIÓ SU', no_autorizado:'NO AUTORIZADO', desconocido:'HUELLA NO RECONOCIDA', sin_servicio:'FUERA DE HORARIO DE SERVICIO'};
+function pintarComedor(d){
+  $('#k-serv').textContent=(d.servicio||'–')+(d.hay_hora?' · '+(d.hora||'').slice(0,5):'');
+  const hoy=d.hoy||{};
+  const mapa={Desayuno:hoy.desayuno,Almuerzo:hoy.almuerzo,Refrigerio:hoy.refrigerio};
+  const n=mapa[d.servicio]!==undefined?mapa[d.servicio]:(hoy.otros||0);
+  $('#k-count').textContent=`${n} entregados hoy · ${hoy.servidos||0} de ${d.estudiantes||0} alumnos han pasado`;
+  const u=d.ultimo, k=$('#kiosk');
+  if(u && u.id!==lastUltimoId){
+    const nuevo=!primeraCarga && u.fecha===d.fecha;
+    lastUltimoId=u.id;
+    if(u.fecha===d.fecha){   // solo mostrar eventos de HOY en el kiosco
+      k.className='kiosk '+u.resultado;
+      $('#k-icon').textContent=u.resultado==='permitido'?'✅':(u.resultado==='duplicado'?'⚠️':(u.resultado==='sin_servicio'?'🕐':'❌'));
+      $('#k-nom').textContent=u.nombre;
+      if(u.resultado==='duplicado') $('#k-res').textContent=`YA RECIBIÓ SU ${(u.servicio||'').toUpperCase()} HOY`;
+      else if(u.resultado==='permitido') $('#k-res').textContent=`${(u.servicio||'').toUpperCase()} ENTREGADO · ${u.hora||''}`;
+      else $('#k-res').textContent=FRASE[u.resultado]||u.resultado;
+      if(nuevo) beep(u.resultado);
+    }
+  }
+  primeraCarga=false;
+}
+
+async function cargarPanel(){
+  if(enVuelo || escribiendo)return;
+  enVuelo=true;
+  try{
+    const d=await j('/api/estado');
+    // primera vez sin hora: fijarla sola con la hora del celular
+    if(!d.hay_hora && !autoHora){autoHora=true; fijarHora();}
+    $('#m-est').textContent=d.estudiantes; $('#m-hue').textContent=d.huellas;
+    $('#m-reg').textContent=d.registros;
+    $('#m-ok').textContent=d.permitido||0; $('#m-dup').textContent=d.duplicado||0;
+    $('#m-no').textContent=d.no_autorizado||0; $('#m-unk').textContent=d.desconocido||0;
+    // metricas de HOY + cobertura del servicio actual
+    const hy=d.hoy||{};
+    $('#m-fecha').textContent=d.hay_hora?('· '+(d.fecha||'')):'';
+    $('#h-des').textContent=hy.desayuno||0; $('#h-alm').textContent=hy.almuerzo||0;
+    $('#h-ref').textContent=hy.refrigerio||0; $('#h-dup').textContent=hy.duplicados||0;
+    $('#h-unk').textContent=hy.desconocidos||0;
+    const tot=d.estudiantes||0, srv=hy.servidos||0;
+    const pct=tot?Math.round(srv*100/tot):0;
+    $('#cov-txt').textContent=`Cobertura de ${d.servicio||'servicio'} hoy: ${srv} de ${tot} alumnos (${pct}%)`;
+    $('#cov-fill').style.width=pct+'%';
+    // kiosco del comedor
+    pintarComedor(d);
+    // si el panel está visible y llegó un evento nuevo, refrescar las listas
+    if(!$('#v-panel').classList.contains('hide') && d.ultimo && d.ultimo.id!==ultimoResumen){
+      ultimoResumen=d.ultimo.id; cargarResumen();
+    }
+    // reloj
+    $('#c-hora').textContent=d.hay_hora? (d.hora||'').slice(0,5):'--:--';
+    $('#c-serv').textContent=d.hay_hora? d.servicio : 'sin hora';
+    $('#warn-hora').classList.toggle('hide', d.hay_hora);
+    // estado del lector en vivo
+    $('#lec-txt').textContent=d.lector||'–';
+    // ultima huella
+    if(d.ultimo){
+      const u=d.ultimo, b=$('#ultimo');
+      b.className='banner '+u.resultado; b.classList.remove('hide');
+      $('#u-nombre').textContent=u.nombre;
+      const p=$('#u-pill'); p.className='pill '+u.resultado; p.textContent=u.resultado;
+      $('#u-meta').textContent=(u.servicio||'')+' · '+(u.hora||'');
+    }
+    // servicios
+    const tb=$('#t-serv');
+    tb.innerHTML=(d.servicios&&d.servicios.length)
+      ? d.servicios.map(s=>`<tr><td>${esc(s.nombre)}</td><td>${s.n}</td></tr>`).join('')
+      : '<tr><td colspan="2" class="muted">Sin datos aún</td></tr>';
+    // enrolamiento en curso (3 muestras del mismo dedo)
+    const bar=$('#enrollbar');
+    if(d.enroll){
+      bar.classList.remove('hide');
+      const m=4-(d.enroll_falta||3);
+      $('#enroll-nom').textContent=(estMap[d.enroll]||('id '+d.enroll))+` (muestra ${m} de 3)`;
+      $('#enroll-est').textContent=d.lector||'';   // lo que el lector dice EN VIVO
+    }
+    else bar.classList.add('hide');
+    // al terminar el enrolamiento, mostrar el resultado REAL del lector
+    if(lastEnroll && !d.enroll){ toast(d.lector||'Listo'); cargarEst(); }
+    lastEnroll=d.enroll||0;
+  }catch(e){/* silencioso: el panel reintenta solo */}
+  finally{enVuelo=false;}
+}
+async function cargarEst(){
+  try{
+    const d=await j('/api/estudiantes'); estMap={};
+    d.forEach(e=>estMap[e.id]=e.nombre+' '+e.apellido);
+    $('#t-est').innerHTML=d.length? d.map(e=>
+      `<tr><td>${esc(e.documento)}</td><td>${esc(e.nombre)} ${esc(e.apellido)}${e.activo?'':' <span class="pill no_autorizado">inactivo</span>'}</td>
+       <td>${esc(e.grado)}</td>
+       <td style="text-align:center">${e.autorizacion? e.huellas : '<span class="pill no_autorizado">sin autorización</span>'}</td>
+       <td><div class="row-act">
+         ${e.autorizacion? `<button class="mini enrol" onclick="enrolar(${e.id})">＋ huella</button>
+            <button class="mini danger" onclick="revocar(${e.id},'${esc(e.nombre)}')">revocar</button>`:''}
+         <button class="mini danger" data-armed="0" onclick="delTap(this,${e.id})">borrar</button>
+       </div></td></tr>`).join('')
+      :'<tr><td colspan="5" class="muted">Sin alumnos</td></tr>';
+  }catch(e){toast('Error cargando alumnos');}
+}
+async function cargarReg(){
+  try{
+    const d=await j('/api/registros');
+    $('#t-reg').innerHTML=d.length? d.map(r=>
+      `<tr><td class="muted">${esc(r.hora||'--')}</td><td>${esc(r.nombre)}</td>
+       <td>${esc(r.servicio)}</td><td><span class="pill ${r.resultado}">${esc(r.resultado)}</span></td></tr>`).join('')
+      :'<tr><td colspan="4" class="muted">Sin registros</td></tr>';
+  }catch(e){toast('Error cargando registros');}
+}
+function delTap(btn,id){
+  if(btn.dataset.armed==='1'){ doBorrar(id); return; }
+  btn.dataset.armed='1'; btn.textContent='¿seguro?';
+  setTimeout(()=>{ if(btn.dataset.armed==='1'){btn.dataset.armed='0';btn.textContent='borrar';} },3000);
+}
+async function doBorrar(id){
+  escribiendo=true;
+  try{const res=await j('/api/estudiantes/borrar',POST({id}));
+    toast(res.ok?'Alumno borrado':'No se encontró'); await cargarEst(); cargarPanel();
+  }catch(e){toast('Error al borrar');}
+  finally{escribiendo=false;}
+}
+async function enrolar(id){
+  try{const res=await j('/api/enrolar',POST({id}));
+    if(res.ok){toast('Pon el dedo en el lector de la placa'); lastEnroll=id; cargarPanel();}
+    else toast('No se pudo iniciar');
+  }catch(e){toast('No se pudo iniciar el enrolamiento');}
+}
+async function cancelEnrol(){ try{await j('/api/enrolar/cancelar',POST({}));}catch(e){} lastEnroll=0; cargarPanel(); }
+async function fijarHora(){
+  const n=new Date();
+  const epoch=Math.floor(n.getTime()/1000), tz=-n.getTimezoneOffset()*60;
+  try{const res=await j('/api/hora',POST({epoch,tz}));
+    if(res.ok){toast('Hora fijada: '+res.hora); cargarPanel();}
+  }catch(e){toast('No se pudo fijar la hora');}
+}
+$('#f-nuevo').onsubmit=async ev=>{
+  ev.preventDefault();
+  const btn=ev.target.querySelector('button[type=submit]');
+  const f=new FormData(ev.target), o={}; f.forEach((v,k)=>o[k]=v);
+  if(!o.documento || !o.nombre){toast('Documento y nombre son obligatorios');return;}
+  if(!$('#chk-auto').checked){
+    toast('⚠️ Debe aceptar la autorización de tratamiento de datos biométricos');
+    $('#chk-auto').focus(); return;
+  }
+  o.autorizacion = true;
+  if(!o.acudiente || !o.doc_acudiente){toast('Indique quién autoriza y su documento');return;}
+  escribiendo=true; btn.disabled=true; const txt=btn.textContent; btn.textContent='Guardando…';
+  try{
+    const res=await j('/api/estudiantes',POST(o));
+    toast('✅ '+o.nombre+' guardado');
+    ev.target.reset();
+    await cargarEst();          // refrescar la lista Y el mapa de nombres
+    cargarPanel();
+  }catch(e){
+    // decir QUÉ pasó, no un "no se pudo" a secas
+    if(e.name==='AbortError') toast('La placa tardó demasiado. Revisa en «Alumnos» si quedó guardado.');
+    else if(e.status===507)   toast('⚠️ Memoria de la placa llena: no se pudo guardar');
+    else if(e.data && e.data.error) toast('⚠️ '+e.data.error);
+    else toast('No se pudo guardar (revisa la conexión al WiFi ALIMETRIK)');
+    cargarEst();                 // por si SÍ se guardó pese al error
+  }finally{
+    escribiendo=false; btn.disabled=false; btn.textContent=txt;
+  }
+};
+
+
+
+// ---- ¿Quiénes han pasado hoy? (listas por categoría) ----
+let resumen=null, catActual='atendidos', ultimoResumen=0;
+$$('.tabs.sub .tab').forEach(t=>t.onclick=()=>{
+  $$('.tabs.sub .tab').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on'); catActual=t.dataset.r; pintarResumen();
+});
+async function cargarResumen(){
+  try{ resumen=await j('/api/resumen'); pintarResumen(); }catch(e){}
+}
+function pintarResumen(){
+  const d=resumen, cont=$('#lista-resumen');
+  if(!d){ cont.innerHTML='<div class="vacio">Cargando…</div>'; return; }
+  $('#r-serv').textContent='· '+(d.servicio||'');
+  $('#c-at').textContent=d.n_atendidos||0;
+  $('#c-pen').textContent=d.n_pendientes||0;
+  $('#c-dup').textContent=(d.duplicados||[]).length;
+
+  if(catActual==='atendidos'){
+    const L=d.atendidos||[];
+    cont.innerHTML=L.length? L.map((a,i)=>
+      `<div class="fila"><span class="num">${i+1}</span><span>${esc(a.nombre)}</span>
+       <span class="g">${esc(a.grado||'')}</span><span class="h">${esc(a.hora||'')}</span></div>`).join('')
+      : `<div class="vacio">Todavía nadie ha recibido ${esc(d.servicio||'el servicio')} hoy</div>`;
+  }
+  else if(catActual==='pendientes'){
+    const L=d.pendientes||[];
+    cont.innerHTML=L.length? L.map((a,i)=>
+      `<div class="fila pen"><span class="num">${i+1}</span><span>${esc(a.nombre)}</span>
+       <span class="g">${esc(a.grado||'')}</span></div>`).join('')
+      + (d.sin_huella? `<div class="vacio">➕ ${d.sin_huella} alumno(s) más sin huella enrolada</div>`:'')
+      : `<div class="vacio">✅ Todos los alumnos con huella ya pasaron</div>`;
+  }
+  else if(catActual==='duplicados'){
+    const L=d.duplicados||[];
+    cont.innerHTML=L.length? L.map(a=>
+      `<div class="fila"><span>⚠️</span><span>${esc(a.nombre)}</span>
+       <span class="h" style="color:var(--dup)">${esc(a.hora||'')}</span></div>`).join('')
+      : `<div class="vacio">Nadie ha intentado repetir hoy</div>`;
+  }
+  else {
+    const L=d.grados||[];
+    cont.innerHTML=L.length? L.map(g=>{
+      const p=g.total? Math.round(g.atendidos*100/g.total):0;
+      return `<div class="fila"><span><b>${esc(g.grado)}</b></span>
+        <span class="g">${g.atendidos} de ${g.total} (${p}%)</span>
+        <div class="barrita"><i style="width:${p}%"></i></div></div>`;}).join('')
+      : `<div class="vacio">Sin alumnos registrados</div>`;
+  }
+  if(d.desconocidos) cont.innerHTML += `<div class="vacio">👤 ${d.desconocidos} huella(s) no reconocida(s) hoy</div>`;
+}
+
+// ---- SERVICIOS Y HORARIOS ----
+async function cargarServicios(){
+  try{
+    const d=await j('/api/servicios');
+    $('#t-srv').innerHTML=(d&&d.length)? d.map(s=>
+      `<tr><td><b>${esc(s.nombre)}</b></td><td>${esc(s.inicio)}</td><td>${esc(s.fin)}</td>
+       <td>${s.activo?'<span class="pill permitido">activo</span>':'<span class="pill desconocido">suspendido</span>'}</td>
+       <td><div class="row-act">
+         <button class="mini enrol" onclick='srvEditar(${JSON.stringify(s)})'>editar</button>
+         <button class="mini danger" onclick="srvBorrar(${s.id},'${esc(s.nombre)}')">borrar</button>
+       </div></td></tr>`).join('')
+      : '<tr><td colspan="5" class="muted">Sin servicios definidos</td></tr>';
+  }catch(e){}
+}
+function srvEditar(s){
+  $('#srv-id').value=s.id; $('#srv-nombre').value=s.nombre;
+  $('#srv-inicio').value=s.inicio; $('#srv-fin').value=s.fin;
+  $('#srv-activo').value=s.activo?'true':'false';
+  $('#srv-btn').textContent='Guardar cambios';
+  $('#srv-nombre').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function srvLimpiar(){
+  $('#srv-id').value=''; $('#f-srv').reset(); $('#srv-btn').textContent='Guardar servicio';
+}
+$('#f-srv').onsubmit=async ev=>{
+  ev.preventDefault();
+  const f=new FormData(ev.target), o={}; f.forEach((v,k)=>o[k]=v);
+  o.activo = (o.activo==='true');
+  if(o.id) o.id=parseInt(o.id,10); else delete o.id;
+  escribiendo=true;
+  try{ await j('/api/servicios',POST(o)); toast('✅ Horario guardado');
+       srvLimpiar(); await cargarServicios(); cargarPanel(); }
+  catch(e){ toast(e.data&&e.data.error ? e.data.error : 'No se pudo guardar el horario'); }
+  finally{ escribiendo=false; }
+};
+async function srvBorrar(id,nom){
+  if(!confirm('¿Borrar el servicio '+nom+'?'))return;
+  escribiendo=true;
+  try{ await j('/api/servicios/borrar',POST({id})); toast('Servicio borrado'); await cargarServicios(); }
+  catch(e){ toast('No se pudo borrar'); }
+  finally{ escribiendo=false; }
+}
+async function srvRestaurar(){
+  if(!confirm('¿Restaurar Desayuno, Almuerzo y Refrigerio con sus horarios habituales?\n\nSe reemplazarán los servicios actuales.'))return;
+  escribiendo=true;
+  try{ await j('/api/servicios/restaurar',POST({})); toast('Horarios restaurados'); await cargarServicios(); }
+  catch(e){ toast('No se pudo restaurar'); }
+  finally{ escribiendo=false; }
+}
+
+// ---- CONFIGURACIÓN: cuenta, usuarios e información del equipo ----
+async function cargarConfig(){
+  cargarServicios();
+  try{
+    const [us,inf]=await Promise.all([j('/api/usuarios').catch(()=>[]), j('/api/info').catch(()=>null)]);
+    $('#t-usr').innerHTML=(us&&us.length)? us.map(u=>
+      `<tr><td>${esc(u.usuario)}</td><td>${esc(u.nombre)}</td>
+       <td>${u.rol===1?'Administrador':'Operador'}</td>
+       <td style="text-align:right">${(sesion&&sesion.usuario===u.usuario)?'<span class="muted">tú</span>':
+         `<button class="mini danger" onclick="borrarUsuario(${u.id},'${esc(u.usuario)}')">borrar</button>`}</td></tr>`
+      ).join('') : '<tr><td colspan="4" class="muted">Sin usuarios</td></tr>';
+    if(inf){
+      $('#t-info').innerHTML=`
+        <tr><th>Memoria de datos</th><td>${inf.flash_libre_kb} KB libres de ${inf.flash_total_kb} KB</td></tr>
+        <tr><th>Alumnos / huellas / registros</th><td>${inf.estudiantes} / ${inf.huellas} / ${inf.registros}</td></tr>
+        <tr><th>Sesiones activas</th><td>${inf.sesiones}</td></tr>
+        <tr><th>Versión</th><td>${esc(inf.version||'-')}</td></tr>`;
+    }
+  }catch(e){}
+}
+$('#f-clave').onsubmit=async ev=>{
+  ev.preventDefault();
+  const f=new FormData(ev.target), o={}; f.forEach((v,k)=>o[k]=v);
+  escribiendo=true;
+  try{ await j('/api/clave',POST(o)); toast('✅ Contraseña actualizada'); ev.target.reset(); }
+  catch(e){ toast(e.data&&e.data.error ? e.data.error : 'No se pudo cambiar la contraseña'); }
+  finally{ escribiendo=false; }
+};
+$('#f-usr').onsubmit=async ev=>{
+  ev.preventDefault();
+  const f=new FormData(ev.target), o={}; f.forEach((v,k)=>o[k]=v);
+  o.rol=parseInt(o.rol||'0',10);
+  escribiendo=true;
+  try{ await j('/api/usuarios',POST(o)); toast('✅ Usuario creado'); ev.target.reset(); cargarConfig(); }
+  catch(e){ toast(e.data&&e.data.error ? e.data.error : 'No se pudo crear el usuario'); }
+  finally{ escribiendo=false; }
+};
+async function borrarUsuario(id,nom){
+  if(!confirm('¿Borrar el usuario '+nom+'?'))return;
+  escribiendo=true;
+  try{ await j('/api/usuarios/borrar',POST({id})); toast('Usuario borrado'); cargarConfig(); }
+  catch(e){ toast('No se pudo borrar'); }
+  finally{ escribiendo=false; }
+}
+// ---- derecho de revocación / supresión (Ley 1581 art. 8) ----
+async function revocar(id,nom){
+  if(!confirm('¿Revocar la autorización de '+nom+'?\n\nSe borrarán sus huellas y no podrá usar el lector hasta que autorice de nuevo.'))return;
+  escribiendo=true;
+  try{ await j('/api/estudiantes/revocar',POST({id}));
+       toast('Autorización revocada y huellas suprimidas'); await cargarEst(); }
+  catch(e){ toast('No se pudo revocar'); }
+  finally{ escribiendo=false; }
+}
+
+cargarSesion().then(cargarPanel);
+// refresco SIEMPRE (en cualquier pestaña): actualiza la barra del lector,
+// la barra de enrolamiento y el banner de última huella en vivo
+setInterval(cargarPanel, 1000);
+</script>
+</body>
+</html>

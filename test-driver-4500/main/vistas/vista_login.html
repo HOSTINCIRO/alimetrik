@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ALIMETRIK · Iniciar sesión</title>
+<style>
+  :root{--bg:#17181a;--card:#222427;--card2:#2b2e32;--line:#3a3e43;--txt:#eceef0;
+        --muted:#9aa1a8;--pri:#b9c0c7;--no:#ff6b6b;--dup:#f6c453}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+       padding:20px;background:var(--bg);color:var(--txt);
+       font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .caja{width:100%;max-width:390px}
+  .marca{text-align:center;margin-bottom:26px}
+  .logo{width:74px;height:74px;margin:0 auto 14px;border-radius:20px;
+        background:linear-gradient(135deg,#a6adb5,#9aa3ab);display:flex;align-items:center;
+        justify-content:center;font-size:38px;box-shadow:0 8px 28px rgba(18,184,134,.3)}
+  .marca h1{margin:0;font-size:29px;letter-spacing:2px;font-weight:800}
+  .marca p{margin:6px 0 0;color:var(--muted);font-size:13px}
+  form{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px}
+  label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px;
+        text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+  input{width:100%;padding:13px 14px;margin-bottom:16px;border-radius:10px;
+        border:1px solid var(--line);background:var(--bg);color:var(--txt);font-size:16px}
+  input:focus{outline:none;border-color:var(--pri)}
+  button{width:100%;padding:14px;border:none;border-radius:10px;background:var(--pri);
+         color:#1b1d1f;font-size:16px;font-weight:800;cursor:pointer}
+  button:disabled{opacity:.6;cursor:wait}
+  .error{background:rgba(255,107,107,.12);border:1px solid var(--no);color:var(--no);
+         border-radius:10px;padding:11px 13px;margin-bottom:16px;font-size:14px;display:none}
+  .error.ver{display:block}
+  .aviso{background:rgba(246,196,83,.1);border:1px solid var(--dup);color:var(--dup);
+         border-radius:10px;padding:11px 13px;margin-top:16px;font-size:12.5px;line-height:1.5;display:none}
+  .aviso.ver{display:block}
+  .pie{text-align:center;color:var(--muted);font-size:11.5px;margin-top:22px;line-height:1.7}
+  .pie a{color:var(--pri);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="caja">
+  <div class="marca">
+    <div class="logo">🖐</div>
+    <h1>ALIMETRIK</h1>
+    <p>Sistema de comedor escolar con huella dactilar</p>
+  </div>
+
+  <form id="f-login" autocomplete="off">
+    <div class="error" id="err"></div>
+    <label for="usuario">Usuario</label>
+    <input id="usuario" name="usuario" required autocapitalize="none" autocomplete="username">
+    <label for="clave">Contraseña</label>
+    <input id="clave" name="clave" type="password" required autocomplete="current-password">
+    <button type="submit" id="btn">Ingresar</button>
+    <div class="aviso" id="aviso-clave">
+      ⚠️ <b>La contraseña sigue siendo la de fábrica.</b> Por seguridad, cámbiela
+      apenas ingrese, en <b>Configuración → Cambiar contraseña</b>.
+    </div>
+  </form>
+
+  <div class="pie">
+    Acceso restringido al personal autorizado del comedor.<br>
+    El uso de datos biométricos se rige por la <a href="/terminos" target="_blank">política de
+    tratamiento de datos</a> (Ley 1581 de 2012).
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+// avisar si la clave sigue siendo la de fábrica
+fetch('/api/estado-acceso').then(r=>r.json()).then(d=>{
+  if(d && d.clave_por_defecto) $('#aviso-clave').classList.add('ver');
+}).catch(()=>{});
+
+$('#f-login').onsubmit=async ev=>{
+  ev.preventDefault();
+  const btn=$('#btn'), err=$('#err');
+  err.classList.remove('ver');
+  btn.disabled=true; btn.textContent='Verificando…';
+  try{
+    const c=new AbortController(), t=setTimeout(()=>c.abort(),15000);
+    const r=await fetch('/api/login',{method:'POST',signal:c.signal,
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({usuario:$('#usuario').value.trim(),clave:$('#clave').value})});
+    clearTimeout(t);
+    const d=await r.json().catch(()=>null);
+    if(r.ok && d && d.ok){ location.href='/'; return; }
+    err.textContent=(d && d.error) ? d.error : 'Usuario o contraseña incorrectos';
+    err.classList.add('ver');
+    $('#clave').value=''; $('#clave').focus();
+  }catch(e){
+    err.textContent='No hay conexión con la placa. Verifique estar en la red WiFi ALIMETRIK.';
+    err.classList.add('ver');
+  }finally{ btn.disabled=false; btn.textContent='Ingresar'; }
+};
+</script>
+</body>
+</html>

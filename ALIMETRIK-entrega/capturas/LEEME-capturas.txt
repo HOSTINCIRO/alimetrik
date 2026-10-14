@@ -1,0 +1,41 @@
+CAPTURAS DE PANTALLA DEL PROYECTO ALIMETRIK
+===========================================
+Correspondencia con los puntos solicitados:
+
+--- 7. MODELO DE BASE DE DATOS ---
+  modelo entidad relación .... ../base-de-datos/diagramas/modelo-entidad-relacion.png
+  archivo de la base datos ... 05-archivo-base-de-datos-esquema.png
+  phpMyAdmin con la BD ....... 03-phpmyadmin-base-de-datos.png   (las 5 tablas)
+                               04-phpmyadmin-datos-estudiantes.png (registros)
+                               06-phpmyadmin-estructura-tabla.png  (estructura)
+
+--- 8. FRONTEND (dos fotos) ---
+  página de inicio ........... 01-pagina-de-inicio.png
+  página de login ............ 02-pagina-de-login.png
+
+--- 9. BACKEND (dos fotos con el enlace a la base de datos) ---
+  conexión a la BD ........... 07-backend-conexion-base-de-datos.png
+                               (montaje de la memoria y apertura de la BD)
+  consultas a la BD .......... 08-backend-consultas-base-de-datos.png
+                               (altas y lecturas sobre la tabla de estudiantes)
+
+--- 10. PROYECTO ---
+  todo el código ............. 09-todo-el-codigo-del-proyecto.png
+  código de una página ....... 10-codigo-de-una-pagina.png
+  manual de usuario .......... 11-manual-de-usuario.png
+  manual técnico ............. 12-manual-tecnico.png
+
+NOTA SOBRE LA BASE DE DATOS
+---------------------------
+El sistema es EMBEBIDO: guarda los datos en la memoria del propio equipo
+(archivos binarios en /almacen), sin servidor MySQL. Para cumplir el
+requisito académico se creó el MISMO modelo en MariaDB/MySQL y se
+administró con phpMyAdmin: el archivo base-de-datos/esquema-mysql.sql
+reproduce exactamente las cinco tablas, sus llaves y relaciones.
+
+CÓMO ABRIR phpMyAdmin OTRA VEZ
+------------------------------
+  brew services start mariadb
+  cd /tmp/pma && php -S 127.0.0.1:8098
+  luego abrir  http://127.0.0.1:8098   (usuario alimetrik / alimetrik2026)
+Para detenerlo:  brew services stop mariadb
