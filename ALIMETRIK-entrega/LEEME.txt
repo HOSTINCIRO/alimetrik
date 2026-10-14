@@ -12,10 +12,14 @@ manuales/
    MANUAL-TECNICO.docx ........ Cómo instalarlo y mantenerlo: entorno,
                                 compilación, arquitectura, base de datos,
                                 API, seguridad, respaldo y diagnóstico.
+   MANUAL-DEL-PROGRAMADOR.docx  Para quien modifica el código: mapa de
+                                archivos, tareas, datos, API, recetas para
+                                extenderlo, reglas de oro y pruebas.
    EXPLICACION-DEL-CODIGO.docx  Explicación didáctica de cómo funciona
                                 el código por dentro, paso a paso.
 
 codigo/                        Código fuente completo (arquitectura MVC)
+                               (incluye parches/: obligatorio aplicarlo al compilar)
    main/
       main.c ................... Punto de entrada
       modelos/ ................. MODELO: datos y reglas de negocio

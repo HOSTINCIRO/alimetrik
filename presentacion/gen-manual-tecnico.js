@@ -6,7 +6,8 @@ const k = [];
 
 H.portada(k, fs, "MANUAL TÉCNICO",
   "Instalación, arquitectura y mantenimiento del sistema",
-  "ESP32-P4 (Guition) · DigitalPersona U.are.U 4500 · ESP-IDF v5.5 · Arquitectura MVC");
+  "ESP32-P4 (Guition) · DigitalPersona U.are.U 4500 · ESP-IDF v5.5 · Arquitectura MVC",
+  "Versión 2.1 · Octubre de 2026");
 
 k.push(H1("", "Contenido"));
 [["1","Descripción general y requisitos"],["2","Instalación del entorno de desarrollo"],
@@ -129,12 +130,24 @@ k.push(...CODE("Secuencia completa",[
   "source ~/esp/esp-idf/export.sh          # en Windows: usar ESP-IDF Command Prompt",
   "",
   "idf.py set-target esp32p4               # solo la primera vez",
+  "idf.py reconfigure                      # descarga los componentes de WiFi",
+  "./parches/aplicar-parches.sh            # OBLIGATORIO (ver el recuadro siguiente)",
   "idf.py build                            # compila (5-10 min la primera vez)",
   "idf.py -p /dev/cu.usbserial-110 -b 460800 flash    # graba el firmware",
   "",
   "# Ver los mensajes del equipo (Ctrl+] para salir)",
   "idf.py -p /dev/cu.usbserial-110 monitor"].join("\n")));
+k.push(CALLOUT("El parche es obligatorio",[["El componente de WiFi (",{}],["esp_hosted",{font:"Courier New"}],[") arranca solo ",{}],["antes",{bold:true}],[" que el programa y agota la memoria interna: sin el parche la placa se reinicia en bucle y ",{}],["nunca llega a funcionar",{bold:true}],[". El script ",{}],["parches/aplicar-parches.sh",{font:"Courier New"}],[" lo aplica. Hay que repetirlo cada vez que se vuelvan a descargar los componentes (por ejemplo, después de borrar la carpeta ",{}],["managed_components",{font:"Courier New"}],[").",{}]],AMBERBG,AMBER));
+k.push(SEP());
 k.push(CALLOUT("Si la grabación falla",[["Compruebe que ningún otro programa tenga ocupado el puerto (monitor serie abierto, otra terminal). En Linux y macOS: ",{}],["lsof /dev/cu.usbserial-110",{font:"Courier New"}],[" y cierre el proceso. Si persiste, baje la velocidad a ",{}],["-b 115200",{font:"Courier New"}],[". El cable CH340 introduce ruido a velocidades altas.",{}]],AMBERBG,AMBER));
+
+k.push(H2("4.3  Obtener el código desde GitHub"));
+k.push(BODY([["El código completo está en un repositorio de GitHub. Para trabajar en otro computador:",{}]]));
+k.push(...CODE(null,[
+  "git clone https://github.com/HOSTINCIRO/alimetrik.git",
+  "cd alimetrik/test-driver-4500",
+  "# después, los mismos pasos de 4.2: reconfigure, aplicar parche, build, flash"].join("\n")));
+k.push(BODY([["El repositorio es privado: para dar acceso a otra persona, en GitHub: ",{}],["Settings → Collaborators → Add people",{bold:true}],[". No se suben las compilaciones (",{}],["build/",{font:"Courier New"}],[") ni los componentes descargados: se regeneran al compilar. Para entender el código por dentro, vea el ",{}],["Manual del programador",{bold:true}],[".",{}]]));
 
 // 5
 k.push(H1("5","Puesta en marcha y verificación"));
@@ -280,7 +293,7 @@ k.push(...BUL([
   [["Hasta 8 servicios. Cada uno tiene nombre, hora de inicio, hora de fin y estado (activo o suspendido).",{}]],
   [["Las franjas de los servicios ",{}],["activos no pueden cruzarse",{bold:true}],[" entre sí; el sistema rechaza el cambio con un mensaje claro.",{}]],
   [["Fuera de toda franja, el resultado de una verificación es ",{}],["sin_servicio",{font:"Courier New",bold:true}],[": se registra el paso pero no se entrega ración.",{}]],
-  [["Un servicio puede cruzar la medianoche (por ejemplo 22:00 a 02:00); el modelo lo contempla.",{}]],
+  [["La hora de inicio debe ser ",{}],["anterior",{bold:true}],[" a la de fin: ",{}],["no se acepta una franja que cruce la medianoche",{bold:true}],[" (por ejemplo 22:00 a 02:00). Si hiciera falta, se define como dos servicios: 22:00 a 24:00 y 00:00 a 02:00.",{}]],
   [["Si la tabla está vacía, se crean automáticamente Desayuno, Almuerzo y Refrigerio con los horarios habituales.",{}]],
 ]));
 k.push(SEP());

@@ -17,9 +17,10 @@ const BODY = (runs,o={}) => new D.Paragraph({
 const BUL = items => items.map(it => new D.Paragraph({
   children:(Array.isArray(it)?it:[[it,{}]]).map(([t,ro])=>R(t,{size:11,...ro})),
   numbering:{reference:"vinetas",level:0}, spacing:{after:90,line:276}}));
-const NUM = items => items.map(it => new D.Paragraph({
+let _instNum = 0;   /* cada lista numerada es una instancia nueva: así reinicia en 1 */
+const NUM = items => { const inst = ++_instNum; return items.map(it => new D.Paragraph({
   children:(Array.isArray(it)?it:[[it,{}]]).map(([t,ro])=>R(t,{size:11,...ro})),
-  numbering:{reference:"pasos",level:0}, spacing:{after:110,line:276}}));
+  numbering:{reference:"pasos",level:0,instance:inst}, spacing:{after:110,line:276}})); };
 function CODE(titulo, code){
   const out=[];
   if(titulo) out.push(new D.Paragraph({spacing:{before:140,after:40},
@@ -39,7 +40,7 @@ function CALLOUT(titulo,texto,fill=MINTBG,borde=MINT){
     borders:{top:{style:D.BorderStyle.SINGLE,size:6,color:borde},bottom:{style:D.BorderStyle.SINGLE,size:6,color:borde},
       left:{style:D.BorderStyle.SINGLE,size:6,color:borde},right:{style:D.BorderStyle.SINGLE,size:6,color:borde},
       insideHorizontal:{style:D.BorderStyle.NONE},insideVertical:{style:D.BorderStyle.NONE}},
-    rows:[new D.TableRow({children:[new D.TableCell({
+    rows:[new D.TableRow({cantSplit:true,children:[new D.TableCell({
       width:{size:9360,type:D.WidthType.DXA}, shading:{type:D.ShadingType.CLEAR,fill},
       margins:{top:140,bottom:140,left:200,right:200},
       children:[new D.Paragraph({spacing:{after:60},children:[new D.TextRun({text:titulo,font:"Calibri",size:PT(10.5),bold:true,color:NAVY})]}),
@@ -61,7 +62,7 @@ function TABLA(headers,rows,widths){
       ...rows.map((r,ri)=>new D.TableRow({children:r.map((c,i)=>cel(c,widths[i],false,ri))}))]});
 }
 const SEP = () => new D.Paragraph({children:[],spacing:{after:120}});
-function portada(kids, fs, titulo, subtitulo, descripcion){
+function portada(kids, fs, titulo, subtitulo, descripcion, version="Versión 2.0 · Agosto de 2026"){
   kids.push(new D.Paragraph({children:[],spacing:{after:1100}}));
   kids.push(new D.Paragraph({alignment:D.AlignmentType.CENTER,spacing:{after:0},
     children:[new D.ImageRun({type:"png",data:fs.readFileSync("/tmp/huella-doc.png"),
@@ -78,7 +79,7 @@ function portada(kids, fs, titulo, subtitulo, descripcion){
   kids.push(new D.Paragraph({alignment:D.AlignmentType.CENTER,spacing:{after:50},
     children:[new D.TextRun({text:descripcion,font:"Calibri",size:PT(10.5),color:GRIS})]}));
   kids.push(new D.Paragraph({alignment:D.AlignmentType.CENTER,
-    children:[new D.TextRun({text:"Versión 2.0 · Agosto de 2026",font:"Calibri",size:PT(10.5),color:MUTED})]}));
+    children:[new D.TextRun({text:version,font:"Calibri",size:PT(10.5),color:MUTED})]}));
 }
 function documento(kids, pie){
   return new D.Document({

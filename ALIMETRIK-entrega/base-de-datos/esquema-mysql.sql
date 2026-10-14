@@ -43,9 +43,9 @@ CREATE TABLE estudiantes (
     creado          INTEGER NOT NULL,
     -- Consentimiento informado (Ley 1581 de 2012, arts. 5, 6 y 9)
     autorizacion    TINYINT NOT NULL DEFAULT 0, -- 1 = autorizo el uso de la huella
-    acudiente       VARCHAR(59),                -- representante legal que autoriza
-    doc_acudiente   VARCHAR(23),                -- su documento de identidad
-    fecha_autoriza  CHAR(10)                    -- AAAA-MM-DD de la autorizacion
+    acudiente       VARCHAR(59) NOT NULL,       -- representante legal que autoriza (obligatorio)
+    doc_acudiente   VARCHAR(23) NOT NULL,       -- su documento de identidad (obligatorio)
+    fecha_autoriza  CHAR(10)    NOT NULL        -- AAAA-MM-DD (el equipo la toma de su reloj)
 );
 
 -- ---------------------------------------------------------------------
